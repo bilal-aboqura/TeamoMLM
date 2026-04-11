@@ -426,9 +426,9 @@ export async function createCompetition(
   if (!start_time) return { error: "وقت البداية مطلوب" };
   if (!end_time) return { error: "وقت النهاية مطلوب" };
 
-  // datetime-local returns local time without timezone — treat as Egypt time (UTC+2)
-  const startUtc = new Date(start_time + ":00+02:00").toISOString();
-  const endUtc = new Date(end_time + ":00+02:00").toISOString();
+  // datetime-local returns local time without timezone — treat as Iraq time (UTC+3)
+  const startUtc = new Date(start_time + ":00+03:00").toISOString();
+  const endUtc = new Date(end_time + ":00+03:00").toISOString();
 
   if (new Date(endUtc) <= new Date(startUtc))
     return { error: "يجب أن يكون وقت النهاية بعد وقت البداية" };
@@ -468,9 +468,9 @@ export async function updateCompetition(
   if (!start_time) return { error: "وقت البداية مطلوب" };
   if (!end_time) return { error: "وقت النهاية مطلوب" };
 
-  // datetime-local returns local time without timezone — treat as Egypt time (UTC+2)
-  const startUtc = new Date(start_time + ":00+02:00").toISOString();
-  const endUtc = new Date(end_time + ":00+02:00").toISOString();
+  // datetime-local returns local time without timezone — treat as Iraq time (UTC+3)
+  const startUtc = new Date(start_time + ":00+03:00").toISOString();
+  const endUtc = new Date(end_time + ":00+03:00").toISOString();
 
   if (new Date(endUtc) <= new Date(startUtc))
     return { error: "يجب أن يكون وقت النهاية بعد وقت البداية" };
