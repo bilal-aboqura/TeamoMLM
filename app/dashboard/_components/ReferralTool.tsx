@@ -5,7 +5,7 @@ import { useState, useCallback } from "react";
 
 export function ReferralTool({ referralCode }: { referralCode: string }) {
   const [copied, setCopied] = useState(false);
-  const fullUrl = `https://teamoads.com.com/register?ref=${referralCode}`;
+  const fullUrl = `https://teamoads.com/register?ref=${referralCode}`;
 
   const handleCopy = useCallback(async () => {
     try {
