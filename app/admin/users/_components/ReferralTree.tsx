@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { ChevronDown, Users, Crown } from "lucide-react";
+
 type TreeNode = {
   id: string;
   full_name: string;
@@ -11,100 +14,172 @@ type TreeNode = {
   children: TreeNode[];
 };
 
-function TreeNodeCard({ node, isRoot }: { node: TreeNode; isRoot?: boolean }) {
-  const levelColors: Record<number, string> = {
-    1: "bg-amber-100 text-amber-800 border-amber-200",
-    2: "bg-emerald-100 text-emerald-800 border-emerald-200",
-    3: "bg-blue-100 text-blue-800 border-blue-200",
-    4: "bg-purple-100 text-purple-800 border-purple-200",
-    5: "bg-rose-100 text-rose-800 border-rose-200",
-  };
+// Flatten the nested tree into a flat array grouped by depth
+function flattenByDepth(node: TreeNode, result: TreeNode[] = []): TreeNode[] {
+  for (const child of node.children) {
+    result.push(child);
+    flattenByDepth(child, result);
+  }
+  return result;
+}
 
+function groupByDepth(allNodes: TreeNode[]): Record<number, TreeNode[]> {
+  const groups: Record<number, TreeNode[]> = {};
+  for (const node of allNodes) {
+    const d = node.depth;
+    if (!groups[d]) groups[d] = [];
+    groups[d].push(node);
+  }
+  return groups;
+}
+
+const LEVEL_STYLES: Record<
+  number,
+  { bg: string; border: string; badge: string; icon: string; label: string }
+> = {
+  1: {
+    bg: "bg-gradient-to-r from-emerald-50 to-emerald-50/30",
+    border: "border-emerald-200",
+    badge: "bg-emerald-600 text-white",
+    icon: "text-emerald-600",
+    label: "الجيل الأول",
+  },
+  2: {
+    bg: "bg-gradient-to-r from-blue-50 to-blue-50/30",
+    border: "border-blue-200",
+    badge: "bg-blue-600 text-white",
+    icon: "text-blue-600",
+    label: "الجيل الثاني",
+  },
+  3: {
+    bg: "bg-gradient-to-r from-violet-50 to-violet-50/30",
+    border: "border-violet-200",
+    badge: "bg-violet-600 text-white",
+    icon: "text-violet-600",
+    label: "الجيل الثالث",
+  },
+  4: {
+    bg: "bg-gradient-to-r from-amber-50 to-amber-50/30",
+    border: "border-amber-200",
+    badge: "bg-amber-600 text-white",
+    icon: "text-amber-600",
+    label: "الجيل الرابع",
+  },
+  5: {
+    bg: "bg-gradient-to-r from-rose-50 to-rose-50/30",
+    border: "border-rose-200",
+    badge: "bg-rose-600 text-white",
+    icon: "text-rose-600",
+    label: "الجيل الخامس",
+  },
+};
+
+function MemberRow({ node }: { node: TreeNode }) {
   return (
-    <div className="flex flex-col items-center">
-      {/* Card */}
-      <div
-        className={`relative flex flex-col items-center gap-1 px-4 py-3 rounded-2xl border shadow-[0_2px_10px_rgba(0,0,0,0.04)] min-w-[140px] text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)] ${
-          isRoot
-            ? "bg-slate-900 border-slate-700 text-white"
-            : "bg-white border-slate-100"
-        }`}
-      >
-        {/* Avatar */}
-        <div
-          className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold ${
-            isRoot ? "bg-white/20 text-white" : "bg-slate-100 text-slate-700"
-          }`}
-        >
-          {node.full_name.charAt(0)}
-        </div>
-
-        {/* Name */}
-        <p
-          className={`text-xs font-semibold leading-tight max-w-[120px] truncate ${
-            isRoot ? "text-white" : "text-slate-900"
-          }`}
-        >
-          {node.full_name}
-        </p>
-
-        {/* Referral code */}
-        <p
-          className={`text-[10px] font-mono ${
-            isRoot ? "text-slate-300" : "text-slate-400"
-          }`}
-        >
-          {node.referral_code}
-        </p>
-
-        {/* Leadership badge */}
-        {node.leadership_level && (
-          <span
-            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-              levelColors[node.leadership_level] ??
-              "bg-slate-100 text-slate-700 border-slate-200"
-            }`}
-          >
-            L{node.leadership_level}
-          </span>
-        )}
-
-        {/* Depth badge */}
-        {!isRoot && (
-          <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-slate-200 text-slate-600 text-[10px] font-bold flex items-center justify-center">
-            {node.depth}
-          </span>
-        )}
+    <div className="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0">
+      {/* Avatar */}
+      <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-600 shrink-0">
+        {node.full_name.charAt(0)}
       </div>
 
-      {/* Children */}
-      {node.children.length > 0 && (
-        <div className="flex flex-col items-center mt-0">
-          {/* Vertical line down from parent */}
-          <div className="w-px h-6 bg-slate-200" />
+      {/* Name + code */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-sm font-semibold text-slate-900 truncate">
+            {node.full_name}
+          </p>
+          {node.leadership_level && (
+            <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-200">
+              <Crown className="w-2.5 h-2.5" />
+              L{node.leadership_level}
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-slate-400 font-mono mt-0.5">
+          {node.referral_code}
+        </p>
+      </div>
 
-          {/* Horizontal line spanning children */}
-          {node.children.length > 1 && (
-            <div className="relative flex items-start">
-              <div
-                className="absolute top-0 left-0 right-0 h-px bg-slate-200"
-                style={{
-                  left: `calc(50% - ${(node.children.length - 1) * 50}%)`,
-                  right: `calc(50% - ${(node.children.length - 1) * 50}%)`,
-                }}
-              />
+      {/* Date */}
+      <p className="text-xs text-slate-400 shrink-0">
+        {new Date(node.created_at).toLocaleDateString("ar-EG", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })}
+      </p>
+    </div>
+  );
+}
+
+function LevelCard({
+  depth,
+  members,
+}: {
+  depth: number;
+  members: TreeNode[];
+}) {
+  const [open, setOpen] = useState(depth === 1);
+  const style = LEVEL_STYLES[depth] ?? LEVEL_STYLES[1];
+
+  return (
+    <div
+      className={`rounded-2xl border ${style.border} overflow-hidden transition-all duration-200`}
+    >
+      {/* Header */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={`w-full flex items-center gap-4 px-5 py-4 ${style.bg} transition-all duration-200 hover:brightness-[0.97]`}
+      >
+        {/* Level badge */}
+        <span
+          className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${style.badge}`}
+        >
+          {depth}
+        </span>
+
+        {/* Label */}
+        <div className="flex-1 text-start">
+          <p className="font-semibold text-slate-900 text-sm">{style.label}</p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            {members.length} عضو
+          </p>
+        </div>
+
+        {/* Members avatars preview */}
+        <div className="flex -space-x-2 space-x-reverse me-2">
+          {members.slice(0, 4).map((m) => (
+            <div
+              key={m.id}
+              className="w-7 h-7 rounded-full bg-white border-2 border-white flex items-center justify-center text-xs font-bold text-slate-600 shadow-sm"
+              style={{ background: "rgb(241 245 249)" }}
+              title={m.full_name}
+            >
+              {m.full_name.charAt(0)}
+            </div>
+          ))}
+          {members.length > 4 && (
+            <div className="w-7 h-7 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-600">
+              +{members.length - 4}
             </div>
           )}
+        </div>
 
-          <div className="flex items-start gap-4 md:gap-8">
-            {node.children.map((child) => (
-              <div key={child.id} className="flex flex-col items-center">
-                {/* Vertical line up to horizontal */}
-                <div className="w-px h-6 bg-slate-200" />
-                <TreeNodeCard node={child} />
-              </div>
-            ))}
-          </div>
+        {/* Chevron */}
+        <ChevronDown
+          className={`w-4 h-4 text-slate-400 transition-transform duration-300 shrink-0 ${
+            open ? "rotate-180" : "rotate-0"
+          }`}
+          strokeWidth={2}
+        />
+      </button>
+
+      {/* Members list */}
+      {open && (
+        <div className="bg-white px-5 py-1">
+          {members.map((m) => (
+            <MemberRow key={m.id} node={m} />
+          ))}
         </div>
       )}
     </div>
@@ -112,43 +187,50 @@ function TreeNodeCard({ node, isRoot }: { node: TreeNode; isRoot?: boolean }) {
 }
 
 export function ReferralTree({ root }: { root: TreeNode }) {
+  const allDescendants = flattenByDepth(root);
+  const grouped = groupByDepth(allDescendants);
+  const depths = Object.keys(grouped)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+  if (depths.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl p-12 text-center border border-slate-100">
+        <Users className="w-12 h-12 mx-auto text-slate-300 mb-3" strokeWidth={1.5} />
+        <p className="text-slate-700 font-semibold">لا يوجد أعضاء في الشبكة بعد</p>
+        <p className="text-sm text-slate-400 mt-1">
+          لم يقم هذا المستخدم بدعوة أي أعضاء حتى الآن
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="overflow-x-auto pb-4">
-      <div className="flex justify-center min-w-max px-4">
-        <TreeNodeCard node={root} isRoot />
+    <div className="space-y-3">
+      {/* Summary bar */}
+      <div className="flex items-center justify-between bg-slate-50 rounded-2xl px-5 py-3 border border-slate-100 mb-1">
+        <p className="text-sm font-semibold text-slate-700">
+          إجمالي الشبكة
+        </p>
+        <div className="flex items-center gap-4">
+          <div className="text-center">
+            <p className="text-lg font-bold text-slate-900">
+              {allDescendants.length}
+            </p>
+            <p className="text-[10px] text-slate-400">عضو</p>
+          </div>
+          <div className="w-px h-8 bg-slate-200" />
+          <div className="text-center">
+            <p className="text-lg font-bold text-slate-900">{depths.length}</p>
+            <p className="text-[10px] text-slate-400">جيل</p>
+          </div>
+        </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex items-center justify-center gap-4 mt-8 flex-wrap">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-slate-900" />
-          <span className="text-xs text-slate-500">المستخدم المحدد</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-white border border-slate-200" />
-          <span className="text-xs text-slate-500">عضو عادي</span>
-        </div>
-        {[1, 2, 3].map((l) => (
-          <div key={l} className="flex items-center gap-1.5">
-            <div
-              className={`w-3 h-3 rounded-full border ${
-                {
-                  1: "bg-amber-100 border-amber-200",
-                  2: "bg-emerald-100 border-emerald-200",
-                  3: "bg-blue-100 border-blue-200",
-                }[l]
-              }`}
-            />
-            <span className="text-xs text-slate-500">قيادي L{l}</span>
-          </div>
-        ))}
-        <div className="flex items-center gap-1.5">
-          <div className="w-4 h-4 rounded-full bg-slate-200 text-slate-500 text-[9px] font-bold flex items-center justify-center">
-            N
-          </div>
-          <span className="text-xs text-slate-500">رقم الجيل</span>
-        </div>
-      </div>
+      {/* Level cards */}
+      {depths.map((depth) => (
+        <LevelCard key={depth} depth={depth} members={grouped[depth]} />
+      ))}
     </div>
   );
 }
