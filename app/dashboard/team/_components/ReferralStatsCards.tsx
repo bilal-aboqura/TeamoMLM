@@ -43,9 +43,9 @@ export function ReferralStatsCards({
             <p className="text-sm font-semibold uppercase tracking-wider text-slate-400">إجمالي أرباح الإحالات</p>
           </div>
           
-          <div className="flex items-baseline gap-1 break-all" dir="ltr">
+          <div className="flex items-baseline gap-1 w-full" dir="ltr">
             <span className="text-2xl font-medium text-emerald-500 mb-1 shrink-0">$</span>
-            <span className="text-[clamp(2.5rem,5vw,3.5rem)] leading-none font-bold text-white tracking-tight">
+            <span className="text-[clamp(2.5rem,5vw,3.5rem)] leading-none font-bold text-white tracking-tight truncate" title={`$${totalEarnings.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
               {totalEarnings.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
@@ -57,7 +57,7 @@ export function ReferralStatsCards({
           {/* Box 1: Team Size */}
           <div className="flex-1 md:w-28 lg:w-32 flex flex-col items-center justify-center p-3 text-center border-e border-slate-700/50">
             <Users className="w-5 h-5 text-blue-400 mb-1.5" strokeWidth={1.5} />
-            <span dir="ltr" className="text-xl lg:text-2xl font-bold text-white leading-tight break-all">
+            <span dir="ltr" className="text-xl lg:text-2xl font-bold text-white leading-tight truncate w-full" title={totalTeamSize.toLocaleString("en-US")}>
               {totalTeamSize.toLocaleString("en-US")}
             </span>
             <p className="text-[10px] lg:text-xs text-slate-400 mt-1">حجم الفريق</p>
@@ -66,7 +66,7 @@ export function ReferralStatsCards({
           {/* Box 2: Direct */}
           <div className="flex-1 md:w-28 lg:w-32 flex flex-col items-center justify-center p-3 text-center">
             <UserPlus className="w-5 h-5 text-emerald-400 mb-1.5" strokeWidth={1.5} />
-            <span dir="ltr" className="text-xl lg:text-2xl font-bold text-white leading-tight break-all">
+            <span dir="ltr" className="text-xl lg:text-2xl font-bold text-white leading-tight truncate w-full" title={directCount.toLocaleString("en-US")}>
               {directCount.toLocaleString("en-US")}
             </span>
             <p className="text-[10px] lg:text-xs text-slate-400 mt-1">مباشرين</p>
