@@ -44,10 +44,18 @@ function EditModal({
     }
   }
 
+  // Convert UTC → Iraq time (UTC+3) for display in the datetime-local input
   const toLocalInput = (iso: string) => {
-    const d = new Date(iso);
+    const d = new Date(new Date(iso).getTime() + 3 * 60 * 60 * 1000);
     const pad = (n: number) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+  };
+
+  // Format timestamp to Iraq time for display
+  const toIraqTime = (iso: string) => {
+    const d = new Date(new Date(iso).getTime() + 3 * 60 * 60 * 1000);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getUTCDate()}/${d.getUTCMonth() + 1} — ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
   };
 
   return (
@@ -165,7 +173,7 @@ export function CompetitionTable({ competitions }: { competitions: CompetitionRo
                     </td>
                     <td className="px-4 py-4 hidden md:table-cell" dir="ltr">
                       <span className="text-xs text-slate-500">
-                        {new Date(comp.start_time).toLocaleDateString("en", { month: "short", day: "numeric" })} — {new Date(comp.end_time).toLocaleDateString("en", { month: "short", day: "numeric" })}
+                        {toIraqTime(comp.start_time)} → {toIraqTime(comp.end_time)}
                       </span>
                     </td>
                     <td className="px-4 py-4">
