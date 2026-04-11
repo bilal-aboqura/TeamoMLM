@@ -330,6 +330,18 @@ All user input is validated at the server action boundary using Zod:
 
 ---
 
+## 👨‍💻 Developer
+
+<p align="center">
+  <strong>Bilal Aboqura</strong>
+  <br />
+  <a href="https://instagram.com/_bilalaboqura">
+    <img src="https://img.shields.io/badge/@__bilalaboqura-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram" />
+  </a>
+</p>
+
+---
+
 ## 📄 License
 
 This is proprietary software. All rights reserved.
@@ -337,5 +349,5 @@ This is proprietary software. All rights reserved.
 ---
 
 <p align="center">
-  <sub>Built with precision for the Arabic-speaking market.</sub>
+  <sub>Designed & developed by <strong>Bilal Aboqura</strong> — built with precision for the Arabic-speaking market.</sub>
 </p>
