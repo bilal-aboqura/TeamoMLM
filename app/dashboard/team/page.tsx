@@ -26,7 +26,7 @@ export default async function TeamPage() {
       .single(),
     supabase
       .from("users")
-      .select("referral_code")
+      .select("referral_code, leadership_level")
       .eq("id", user.id)
       .single(),
     supabase.rpc("get_my_referral_tree"),
@@ -39,6 +39,11 @@ export default async function TeamPage() {
   };
 
   const referralCode = profileResult.data?.referral_code ?? "";
+  const leadershipLevel = profileResult.data?.leadership_level ?? null;
+
+  const rankLabel = leadershipLevel
+    ? `قائد ${leadershipLevel}`
+    : "عضو";
   // NEXT_PUBLIC_APP_URL must be the domain root only (e.g. https://teamoads.com or http://localhost:3000).
   // We append /register here unconditionally so InviteLinkCard always gets a complete base path.
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://teamoads.com").replace(/\/$/, "");
@@ -48,7 +53,16 @@ export default async function TeamPage() {
 
   return (
     <div className="max-w-md mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">فريقي</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-slate-900">فريقي</h1>
+        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold ${
+          leadershipLevel
+            ? "bg-amber-50 text-amber-700 border border-amber-100"
+            : "bg-slate-100 text-slate-500"
+        }`}>
+          {rankLabel}
+        </span>
+      </div>
 
       <ReferralStatsCards
         directCount={stats.direct_count}

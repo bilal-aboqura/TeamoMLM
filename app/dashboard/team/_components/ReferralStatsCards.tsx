@@ -29,24 +29,24 @@ export function ReferralStatsCards({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all duration-200 hover:-translate-y-1">
-        <span dir="ltr" className="text-3xl font-bold text-emerald-600 block">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 min-w-0">
+      <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all duration-200 hover:-translate-y-1 overflow-hidden">
+        <span dir="ltr" className="text-3xl font-bold text-emerald-600 block truncate" title={String(directCount)}>
           {directCount}
         </span>
-        <p className="text-sm text-slate-500 mt-1">الإحالات المباشرة</p>
+        <p className="text-sm text-slate-500 mt-1 truncate">الإحالات المباشرة</p>
       </div>
-      <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all duration-200 hover:-translate-y-1">
-        <span dir="ltr" className="text-3xl font-bold text-emerald-600 block">
+      <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all duration-200 hover:-translate-y-1 overflow-hidden">
+        <span dir="ltr" className="text-3xl font-bold text-emerald-600 block truncate" title={String(totalTeamSize)}>
           {totalTeamSize}
         </span>
-        <p className="text-sm text-slate-500 mt-1">حجم الفريق</p>
+        <p className="text-sm text-slate-500 mt-1 truncate">حجم الفريق</p>
       </div>
-      <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all duration-200 hover:-translate-y-1">
-        <span dir="ltr" className="text-3xl font-bold text-emerald-600 block">
+      <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all duration-200 hover:-translate-y-1 overflow-hidden">
+        <span dir="ltr" className="text-3xl font-bold text-emerald-600 block truncate" title={`$${totalEarnings.toFixed(2)}`}>
           ${totalEarnings.toFixed(2)}
         </span>
-        <p className="text-sm text-slate-500 mt-1">أرباح الإحالات</p>
+        <p className="text-sm text-slate-500 mt-1 truncate">أرباح الإحالات</p>
       </div>
     </div>
   );
