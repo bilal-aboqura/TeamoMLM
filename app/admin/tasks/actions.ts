@@ -131,10 +131,10 @@ export async function deleteTask(taskId: string): Promise<TaskCrudResult> {
   if (!parsed.success) return { error: "معرّف المهمة غير صالح" };
 
   const adminClient = createAdminClient();
-  // Soft delete: set is_active = false to preserve task_completion_logs integrity
+  // Hard delete: remove the task permanently
   const { error } = await adminClient
     .from("tasks")
-    .update({ is_active: false })
+    .delete()
     .eq("id", parsed.data.taskId);
 
   if (error) {
