@@ -80,4 +80,5 @@ export function ReferralStatsCards({
         </div>
       </div>
     </div>
+  );
 }
