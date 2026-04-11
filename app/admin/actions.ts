@@ -426,11 +426,11 @@ export async function createCompetition(
   if (!start_time) return { error: "وقت البداية مطلوب" };
   if (!end_time) return { error: "وقت النهاية مطلوب" };
 
-  // datetime-local returns local time without timezone — treat as Iraq time (UTC+3)
-  const startUtc = new Date(start_time + ":00+03:00").toISOString();
-  const endUtc = new Date(end_time + ":00+03:00").toISOString();
+  // Store as UTC — the browser will display using the user's local timezone
+  const startIso = new Date(start_time + "Z").toISOString();
+  const endIso = new Date(end_time + "Z").toISOString();
 
-  if (new Date(endUtc) <= new Date(startUtc))
+  if (new Date(endIso) <= new Date(startIso))
     return { error: "يجب أن يكون وقت النهاية بعد وقت البداية" };
 
   const adminClient = createAdminClient();
@@ -438,8 +438,8 @@ export async function createCompetition(
     title: title.trim(),
     reward: reward.trim(),
     terms: terms?.trim() ?? "",
-    start_time: startUtc,
-    end_time: endUtc,
+    start_time: startIso,
+    end_time: endIso,
     is_active: true,
   });
 
@@ -468,11 +468,11 @@ export async function updateCompetition(
   if (!start_time) return { error: "وقت البداية مطلوب" };
   if (!end_time) return { error: "وقت النهاية مطلوب" };
 
-  // datetime-local returns local time without timezone — treat as Iraq time (UTC+3)
-  const startUtc = new Date(start_time + ":00+03:00").toISOString();
-  const endUtc = new Date(end_time + ":00+03:00").toISOString();
+  // Store as UTC — the browser will display using the user's local timezone
+  const startIso = new Date(start_time + "Z").toISOString();
+  const endIso = new Date(end_time + "Z").toISOString();
 
-  if (new Date(endUtc) <= new Date(startUtc))
+  if (new Date(endIso) <= new Date(startIso))
     return { error: "يجب أن يكون وقت النهاية بعد وقت البداية" };
 
   const adminClient = createAdminClient();
@@ -482,8 +482,8 @@ export async function updateCompetition(
       title: title.trim(),
       reward: reward.trim(),
       terms: terms?.trim() ?? "",
-      start_time: startUtc,
-      end_time: endUtc,
+      start_time: startIso,
+      end_time: endIso,
     })
     .eq("id", id);
 

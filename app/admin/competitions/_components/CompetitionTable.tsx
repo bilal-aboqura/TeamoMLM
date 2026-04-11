@@ -16,18 +16,21 @@ type CompetitionRow = {
   created_at: string;
 };
 
-// Convert UTC → Iraq time (UTC+3) for datetime-local input
+// Convert UTC ISO string to datetime-local value (uses browser's local timezone)
 function toLocalInput(iso: string): string {
-  const d = new Date(new Date(iso).getTime() + 3 * 60 * 60 * 1000);
+  const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-// Format UTC timestamp as Iraq time for display
-function toIraqTime(iso: string): string {
-  const d = new Date(new Date(iso).getTime() + 3 * 60 * 60 * 1000);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getUTCDate()}/${d.getUTCMonth() + 1} — ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+// Format UTC timestamp for display (uses browser's local timezone automatically)
+function toLocalDisplay(iso: string): string {
+  return new Date(iso).toLocaleString("ar", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function EditModal({
@@ -174,7 +177,7 @@ export function CompetitionTable({ competitions }: { competitions: CompetitionRo
                     </td>
                     <td className="px-4 py-4 hidden md:table-cell" dir="ltr">
                       <span className="text-xs text-slate-500">
-                        {toIraqTime(comp.start_time)} → {toIraqTime(comp.end_time)}
+                        {toLocalDisplay(comp.start_time)} → {toLocalDisplay(comp.end_time)}
                       </span>
                     </td>
                     <td className="px-4 py-4">
