@@ -16,6 +16,20 @@ type CompetitionRow = {
   created_at: string;
 };
 
+// Convert UTC → Iraq time (UTC+3) for datetime-local input
+function toLocalInput(iso: string): string {
+  const d = new Date(new Date(iso).getTime() + 3 * 60 * 60 * 1000);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+}
+
+// Format UTC timestamp as Iraq time for display
+function toIraqTime(iso: string): string {
+  const d = new Date(new Date(iso).getTime() + 3 * 60 * 60 * 1000);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getUTCDate()}/${d.getUTCMonth() + 1} — ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+}
+
 function EditModal({
   comp,
   onClose,
@@ -44,19 +58,6 @@ function EditModal({
     }
   }
 
-  // Convert UTC → Iraq time (UTC+3) for display in the datetime-local input
-  const toLocalInput = (iso: string) => {
-    const d = new Date(new Date(iso).getTime() + 3 * 60 * 60 * 1000);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
-  };
-
-  // Format timestamp to Iraq time for display
-  const toIraqTime = (iso: string) => {
-    const d = new Date(new Date(iso).getTime() + 3 * 60 * 60 * 1000);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return `${d.getUTCDate()}/${d.getUTCMonth() + 1} — ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
-  };
 
   return (
     <>
