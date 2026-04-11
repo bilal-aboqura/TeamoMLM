@@ -1,4 +1,4 @@
-import { Users, UserPlus, Coins } from "lucide-react";
+import { Users, UserPlus, Coins, Repeat } from "lucide-react";
 
 export function ReferralStatsCards({
   directCount,
@@ -27,51 +27,50 @@ export function ReferralStatsCards({
       </div>
     );
   }
-  return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 md:p-8 border border-slate-800 shadow-xl transition-all duration-300">
-      {/* Glow / Background Effects */}
-      <div className="absolute top-0 end-0 w-full h-[150%] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent pointer-events-none"></div>
-      <div className="absolute -top-24 -end-24 w-64 h-64 bg-emerald-500/20 blur-[80px] rounded-full pointer-events-none"></div>
+  const earningsString = totalEarnings.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const earningsChars = earningsString.split('');
 
-      {/* Main Content */}
-      <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 backdrop-blur-md">
-              <Coins className="w-5 h-5" strokeWidth={1.5} />
-            </div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-slate-400">إجمالي أرباح الإحالات</p>
-          </div>
-          
-          <div className="flex items-baseline gap-1 w-full" dir="ltr">
-            <span className="text-2xl font-medium text-emerald-500 mb-1 shrink-0">$</span>
-            <span className="text-[clamp(2.5rem,5vw,3.5rem)] leading-none font-bold text-white tracking-tight truncate" title={`$${totalEarnings.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
-              {totalEarnings.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
+  return (
+    <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 rounded-3xl pb-8 pt-10 px-6 sm:px-10 border border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] relative overflow-hidden flex flex-col w-full max-w-sm mx-auto shadow-2xl">
+      
+      {/* Top Section */}
+      <div className="flex flex-col items-end text-end w-full absolute top-8 end-8">
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-sm font-medium text-slate-400 text-center w-min leading-snug">
+            إجمالي أرباح الإحالات
+          </p>
+          <div className="rounded-xl p-2 bg-emerald-950/30 border border-emerald-500/10 flex items-center justify-center shadow-inner">
+            <Coins className="w-5 h-5 text-emerald-500" strokeWidth={1.5} />
           </div>
         </div>
+      </div>
 
-        {/* The Two Small Inner Inset Blocks */}
-        <div className="flex bg-slate-900/50 backdrop-blur-md border border-slate-700/50 rounded-2xl p-2 shrink-0 md:w-auto w-full">
-          
-          {/* Box 1: Team Size */}
-          <div className="flex-1 md:w-28 lg:w-32 flex flex-col items-center justify-center p-3 text-center border-e border-slate-700/50">
-            <Users className="w-5 h-5 text-blue-400 mb-1.5" strokeWidth={1.5} />
-            <span dir="ltr" className="text-xl lg:text-2xl font-bold text-white leading-tight truncate w-full" title={totalTeamSize.toLocaleString("en-US")}>
-              {totalTeamSize.toLocaleString("en-US")}
-            </span>
-            <p className="text-[10px] lg:text-xs text-slate-400 mt-1">حجم الفريق</p>
-          </div>
+      {/* Central Metric (Vertical Stack) */}
+      <div className="flex flex-col items-end pe-0 w-full mt-28 mb-4">
+        <div className="flex items-start">
+           <span className="text-emerald-500 text-[1.5rem] font-medium mt-3 shrink-0 ms-1">$</span>
+           <div className="flex flex-col items-center leading-[0.85] tracking-tighter" dir="ltr">
+             {earningsChars.map((char, i) => (
+                <span key={i} className={`text-[4rem] font-black ${char === '.' ? 'text-emerald-500' : 'text-white'}`}>
+                  {char}
+                </span>
+             ))}
+           </div>
+        </div>
+      </div>
 
-          {/* Box 2: Direct */}
-          <div className="flex-1 md:w-28 lg:w-32 flex flex-col items-center justify-center p-3 text-center">
-            <UserPlus className="w-5 h-5 text-emerald-400 mb-1.5" strokeWidth={1.5} />
-            <span dir="ltr" className="text-xl lg:text-2xl font-bold text-white leading-tight truncate w-full" title={directCount.toLocaleString("en-US")}>
-              {directCount.toLocaleString("en-US")}
-            </span>
-            <p className="text-[10px] lg:text-xs text-slate-400 mt-1">مباشرين</p>
-          </div>
-
+      {/* Bottom Section */}
+      <div className="rounded-xl bg-slate-950/60 p-5 mt-auto flex border border-slate-800/80 shadow-md">
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <UserPlus className="w-5 h-5 text-emerald-500 mb-2" strokeWidth={1.5} />
+          <span className="text-2xl font-bold text-white mb-0.5" dir="ltr">{directCount}</span>
+          <p className="text-[10px] text-slate-400">مباشرين</p>
+        </div>
+        <div className="w-[1px] bg-slate-800/80 mx-2 self-stretch"></div>
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <Users className="w-5 h-5 text-blue-400 mb-2" strokeWidth={1.5} />
+          <span className="text-2xl font-bold text-white mb-0.5" dir="ltr">{totalTeamSize}</span>
+          <p className="text-[10px] text-slate-400">حجم الفريق</p>
         </div>
       </div>
     </div>
