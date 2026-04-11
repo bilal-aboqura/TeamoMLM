@@ -28,55 +28,50 @@ export function ReferralStatsCards({
     );
   }
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 min-w-0">
-      {/* Card 1: Direct Referrals */}
-      <div className="relative overflow-hidden bg-white rounded-2xl p-6 border border-slate-200/60 shadow-sm transition-all duration-300 hover:shadow-md hover:border-emerald-200 group">
-        <div className="absolute top-0 end-0 w-32 h-32 bg-emerald-50 rounded-full blur-3xl -me-10 -mt-10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <div className="relative flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">الإحالات المباشرة</p>
-            <span dir="ltr" className="text-[clamp(1.5rem,4vw,1.875rem)] leading-tight font-bold text-slate-900 block break-all">
-              {directCount.toLocaleString("en-US")}
+    <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 md:p-8 border border-slate-800 shadow-xl transition-all duration-300">
+      {/* Glow / Background Effects */}
+      <div className="absolute top-0 end-0 w-full h-[150%] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent pointer-events-none"></div>
+      <div className="absolute -top-24 -end-24 w-64 h-64 bg-emerald-500/20 blur-[80px] rounded-full pointer-events-none"></div>
+
+      {/* Main Content */}
+      <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 backdrop-blur-md">
+              <Coins className="w-5 h-5" strokeWidth={1.5} />
+            </div>
+            <p className="text-sm font-semibold uppercase tracking-wider text-slate-400">إجمالي أرباح الإحالات</p>
+          </div>
+          
+          <div className="flex items-baseline gap-1 break-all" dir="ltr">
+            <span className="text-2xl font-medium text-emerald-500 mb-1 shrink-0">$</span>
+            <span className="text-[clamp(2.5rem,5vw,3.5rem)] leading-none font-bold text-white tracking-tight">
+              {totalEarnings.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 shadow-inner">
-            <UserPlus className="w-6 h-6" strokeWidth={1.5} />
-          </div>
         </div>
-      </div>
 
-      {/* Card 2: Team Size */}
-      <div className="relative overflow-hidden bg-white rounded-2xl p-6 border border-slate-200/60 shadow-sm transition-all duration-300 hover:shadow-md hover:border-blue-200 group">
-        <div className="absolute top-0 end-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl -me-10 -mt-10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <div className="relative flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">حجم الفريق بالكامل</p>
-            <span dir="ltr" className="text-[clamp(1.5rem,4vw,1.875rem)] leading-tight font-bold text-slate-900 block break-all">
+        {/* The Two Small Inner Inset Blocks */}
+        <div className="flex bg-slate-900/50 backdrop-blur-md border border-slate-700/50 rounded-2xl p-2 shrink-0 md:w-auto w-full">
+          
+          {/* Box 1: Team Size */}
+          <div className="flex-1 md:w-28 lg:w-32 flex flex-col items-center justify-center p-3 text-center border-e border-slate-700/50">
+            <Users className="w-5 h-5 text-blue-400 mb-1.5" strokeWidth={1.5} />
+            <span dir="ltr" className="text-xl lg:text-2xl font-bold text-white leading-tight break-all">
               {totalTeamSize.toLocaleString("en-US")}
             </span>
+            <p className="text-[10px] lg:text-xs text-slate-400 mt-1">حجم الفريق</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-inner">
-            <Users className="w-6 h-6" strokeWidth={1.5} />
-          </div>
-        </div>
-      </div>
 
-      {/* Card 3: Earnings (Premium Highlight) */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-800 shadow-xl transition-all duration-300 hover:-translate-y-1">
-        <div className="absolute top-0 end-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent pointer-events-none"></div>
-        <div className="relative flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">أرباح الإحالات المستلمة</p>
-            <div className="flex items-baseline gap-1 break-all" dir="ltr">
-              <span className="text-xl font-medium text-emerald-500 mb-1 shrink-0">$</span>
-              <span className="text-[clamp(1.5rem,4vw,2rem)] leading-tight font-bold text-white tracking-tight">
-                {totalEarnings.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-            </div>
+          {/* Box 2: Direct */}
+          <div className="flex-1 md:w-28 lg:w-32 flex flex-col items-center justify-center p-3 text-center">
+            <UserPlus className="w-5 h-5 text-emerald-400 mb-1.5" strokeWidth={1.5} />
+            <span dir="ltr" className="text-xl lg:text-2xl font-bold text-white leading-tight break-all">
+              {directCount.toLocaleString("en-US")}
+            </span>
+            <p className="text-[10px] lg:text-xs text-slate-400 mt-1">مباشرين</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-slate-800/50 border border-slate-700/50 text-emerald-400 flex items-center justify-center shrink-0 backdrop-blur-md relative z-10">
-            <Coins className="w-6 h-6" strokeWidth={1.5} />
-          </div>
+
         </div>
       </div>
     </div>
