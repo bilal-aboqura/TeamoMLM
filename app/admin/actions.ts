@@ -425,7 +425,12 @@ export async function createCompetition(
   if (!reward?.trim()) return { error: "الجائزة مطلوبة" };
   if (!start_time) return { error: "وقت البداية مطلوب" };
   if (!end_time) return { error: "وقت النهاية مطلوب" };
-  if (new Date(end_time) <= new Date(start_time))
+
+  // datetime-local returns local time without timezone — treat as Egypt time (UTC+2)
+  const startUtc = new Date(start_time + ":00+02:00").toISOString();
+  const endUtc = new Date(end_time + ":00+02:00").toISOString();
+
+  if (new Date(endUtc) <= new Date(startUtc))
     return { error: "يجب أن يكون وقت النهاية بعد وقت البداية" };
 
   const adminClient = createAdminClient();
@@ -433,8 +438,8 @@ export async function createCompetition(
     title: title.trim(),
     reward: reward.trim(),
     terms: terms?.trim() ?? "",
-    start_time,
-    end_time,
+    start_time: startUtc,
+    end_time: endUtc,
     is_active: true,
   });
 
@@ -462,7 +467,12 @@ export async function updateCompetition(
   if (!reward?.trim()) return { error: "الجائزة مطلوبة" };
   if (!start_time) return { error: "وقت البداية مطلوب" };
   if (!end_time) return { error: "وقت النهاية مطلوب" };
-  if (new Date(end_time) <= new Date(start_time))
+
+  // datetime-local returns local time without timezone — treat as Egypt time (UTC+2)
+  const startUtc = new Date(start_time + ":00+02:00").toISOString();
+  const endUtc = new Date(end_time + ":00+02:00").toISOString();
+
+  if (new Date(endUtc) <= new Date(startUtc))
     return { error: "يجب أن يكون وقت النهاية بعد وقت البداية" };
 
   const adminClient = createAdminClient();
@@ -472,8 +482,8 @@ export async function updateCompetition(
       title: title.trim(),
       reward: reward.trim(),
       terms: terms?.trim() ?? "",
-      start_time,
-      end_time,
+      start_time: startUtc,
+      end_time: endUtc,
     })
     .eq("id", id);
 
@@ -494,7 +504,7 @@ export async function deleteCompetition(
   const adminClient = createAdminClient();
   const { error } = await adminClient
     .from("competitions")
-    .update({ is_active: false })
+    .delete()
     .eq("id", id);
 
   if (error) return { error: "حدث خطأ أثناء حذف المسابقة" };
