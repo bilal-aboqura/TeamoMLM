@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { EditLevelPanel } from "./EditLevelPanel";
 import { AdjustBalancePanel } from "./AdjustBalancePanel";
-import { toggleUserStatus } from "@/app/admin/actions";
+import { toggleUserStatus, deleteUserAction } from "@/app/admin/actions";
 
 type UserRow = {
   id: string;
@@ -113,6 +113,75 @@ function SuspendModal({
   );
 }
 
+function DeleteModal({
+  userName,
+  onClose,
+  onConfirm,
+}: {
+  userName: string;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  const [code, setCode] = useState("");
+  const [verificationCode] = useState(() => Math.floor(1000 + Math.random() * 9000).toString());
+  const [error, setError] = useState("");
+
+  const handleConfirm = () => {
+    if (code !== verificationCode) {
+      setError("الكود غير صحيح");
+      return;
+    }
+    onConfirm();
+  };
+
+  return (
+    <>
+      <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50" onClick={onClose} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center mb-3">
+             <svg className="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+             </svg>
+          </div>
+          <h3 className="text-base font-bold text-slate-900 mb-1">
+             حذف المستخدم {userName}
+          </h3>
+          <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+             هذا الإجراء لا يمكن التراجع عنه. للحذف النهائي، يرجى كتابة كود التأكيد 
+             (<span className="font-bold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">{verificationCode}</span>)
+             أدناه.
+          </p>
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => { setCode(e.target.value); setError(""); }}
+            placeholder="أدخل الكود هنا"
+            autoFocus
+            dir="ltr"
+            className="w-full text-center tracking-widest font-mono border border-slate-200 rounded-xl bg-white px-4 py-3 text-lg text-slate-900 placeholder:text-slate-400 placeholder:text-sm placeholder:tracking-normal focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20 outline-none transition-all"
+          />
+          {error && <p className="text-xs text-rose-600 mt-2">{error}</p>}
+          <div className="flex items-center gap-3 mt-5">
+            <button
+              onClick={onClose}
+              className="flex-1 bg-slate-100 text-slate-700 rounded-xl py-2.5 text-sm font-medium hover:bg-slate-200 transition-all active:scale-95"
+            >
+              إلغاء
+            </button>
+            <button
+              onClick={handleConfirm}
+              className="flex-1 bg-rose-600 text-white rounded-xl py-2.5 text-sm font-medium hover:bg-rose-500 transition-all active:scale-95 shadow-[0_2px_8px_rgba(225,29,72,0.25)]"
+            >
+              تأكيد الحذف
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function UsersTable({
   users,
   totalCount,
@@ -131,6 +200,8 @@ export function UsersTable({
   const [adjustingBalanceUser, setAdjustingBalanceUser] = useState<UserRow | null>(null);
   const [togglingStatusId, setTogglingStatusId] = useState<string | null>(null);
   const [suspendingUser, setSuspendingUser] = useState<UserRow | null>(null);
+  const [deletingUser, setDeletingUser] = useState<UserRow | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -180,6 +251,23 @@ export function UsersTable({
         showToast(result.error, "error");
       }
       setTogglingStatusId(null);
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingUser) return;
+    const userId = deletingUser.id;
+    setDeletingUser(null);
+    setIsDeleting(true);
+    startTransition(async () => {
+       const result = await deleteUserAction(userId);
+       setIsDeleting(false);
+       if ("success" in result) {
+         showToast("تم حذف المستخدم نهائياً بنجاح", "success");
+         router.refresh();
+       } else {
+         showToast(result.error, "error");
+       }
     });
   };
 
@@ -347,6 +435,18 @@ export function UsersTable({
                             d="M3 7h18M3 7a2 2 0 011-1.732M3 7a2 2 0 000 2M3 9v8a2 2 0 002 2h14a2 2 0 002-2V9M15 3h-6M12 3v4" />
                         </svg>
                       </Link>
+                      {/* Delete User */}
+                      <button
+                        onClick={() => setDeletingUser(user)}
+                        disabled={isDeleting || isPending}
+                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all duration-150 disabled:opacity-50"
+                        title="حذف المستخدم نهائياً"
+                        aria-label="حذف"
+                      >
+                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                         </svg>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -417,6 +517,15 @@ export function UsersTable({
           userName={suspendingUser.full_name}
           onClose={() => setSuspendingUser(null)}
           onConfirm={handleConfirmSuspend}
+        />
+      )}
+
+      {/* Delete User Modal */}
+      {deletingUser && (
+        <DeleteModal
+          userName={deletingUser.full_name}
+          onClose={() => setDeletingUser(null)}
+          onConfirm={handleConfirmDelete}
         />
       )}
 

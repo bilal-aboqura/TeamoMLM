@@ -258,6 +258,48 @@ export async function adjustUserBalance(
   return { success: true };
 }
 
+// ====== User Deletion ======
+
+export async function deleteUserAction(userId: string): Promise<AdminActionResult> {
+  const adminId = await verifyAdmin();
+  if (!adminId) return { error: "غير مصرح لك بهذا الإجراء" };
+
+  // Prevent deleting self or the root admin
+  if (userId === adminId || userId === 'a0000000-0000-0000-0000-000000000001') {
+    return { error: "لا يمكن حذف حساب مدير النظام" };
+  }
+
+  const adminClient = createAdminClient();
+
+  // 1. Manually purge dependent records because ON DELETE CASCADE might be missing
+  await adminClient.from("user_task_logs").delete().eq("user_id", userId);
+  await adminClient.from("package_subscription_requests").delete().eq("user_id", userId);
+  await adminClient.from("withdrawal_requests").delete().eq("user_id", userId);
+  await adminClient.from("referral_commission_log").delete().eq("beneficiary_id", userId);
+  await adminClient.from("referral_commission_log").delete().eq("depositing_user_id", userId);
+  await adminClient.from("user_referral_stats").delete().eq("user_id", userId);
+  // Financial audit logs might reference the user ID as record_id (text) or changed_by (uuid)
+  await adminClient.from("financial_audit_log").delete().eq("record_id", userId);
+  
+  // Detach any users that refer to this user
+  await adminClient.from("users").update({ referral_code: 'DELETED', referred_by: null }).eq("referred_by", userId);
+
+  // 2. Finally, delete the user from auth.users (which cascades to public.users if fkey is set, or we do it explicitly if not)
+  const { error } = await adminClient.auth.admin.deleteUser(userId);
+
+  if (error) {
+    console.error(`deleteUser error for ${userId}:`, error.message);
+    // If auth deletion fails (maybe due to other dependencies), try deleting from public.users manually just in case
+    const dbErr = await adminClient.from("users").delete().eq("id", userId);
+    if (dbErr.error) {
+      return { error: `تعذر حذف المستخدم لوجود سجلات مرتبطة به: ${dbErr.error.message}` };
+    }
+  }
+
+  revalidatePath("/admin/users");
+  return { success: true };
+}
+
 // ====== Withdrawal Approvals ======
 
 export async function approveWithdrawal(
