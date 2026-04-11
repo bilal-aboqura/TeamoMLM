@@ -31,7 +31,17 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+Verify compliance with all five TEMO principles before proceeding:
+
+| # | Principle | Gate Question | Status |
+|---|-----------|---------------|--------|
+| I | Architecture & Stack | Does this feature use Next.js App Router, Supabase Auth/DB, and Tailwind CSS only? | ☐ |
+| II | RTL & UI/UX | Are all new components RTL-first, using logical Tailwind utilities and the approved color palette? | ☐ |
+| III | Data Integrity | Do all new financial records have `status`, `created_at`, `updated_at`, and are balance writes admin-only? | ☐ |
+| IV | RBAC | Are admin routes protected at middleware + server level, with RLS policies on all new tables? | ☐ |
+| V | Component Modularity | Are components < 200 lines, server-first, with `loading.tsx` / `error.tsx` co-located? | ☐ |
+
+> Document violations (if any) in the **Complexity Tracking** table below.
 
 ## Project Structure
 
