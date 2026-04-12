@@ -11,17 +11,18 @@ import {
   type TaskActionResult,
 } from "../actions";
 import type { TaskWithStatus } from "../data";
+import { compressImage } from "@/lib/utils/compress-image";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png"];
 
 const initialState: TaskActionResult = { success: false, idle: true };
 
-function SubmitButton() {
+function SubmitButton({ disabled }: { disabled?: boolean }) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={pending || disabled}
       aria-label="رفع الإثبات"
       className="w-full bg-emerald-600 text-white rounded-xl py-3 font-bold hover:bg-emerald-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
     >
@@ -39,11 +40,14 @@ export function TaskExecutionModal({
 }) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [compressedFile, setCompressedFile] = useState<File | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
   const [dropError, setDropError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [state, formAction] = useActionState(submitTaskProof, initialState);
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const compressedInputRef = useRef<HTMLInputElement>(null);
 
   const error = "error" in state ? state.error : null;
 
@@ -51,15 +55,37 @@ export function TaskExecutionModal({
     if ("success" in state && state.success === true) {
       setOpen(false);
       setFile(null);
+      setCompressedFile(null);
       router.refresh();
     }
   }, [state, router]);
 
+  const processFile = async (raw: File) => {
+    setDropError(null);
+    setFile(raw);
+    setIsCompressing(true);
+    try {
+      const compressed = await compressImage(raw);
+      setCompressedFile(compressed);
+      // Sync compressed file into a hidden input via DataTransfer
+      const dt = new DataTransfer();
+      dt.items.add(compressed);
+      if (compressedInputRef.current) {
+        compressedInputRef.current.files = dt.files;
+      }
+    } catch {
+      setDropError("فشل في ضغط الصورة، يرجى المحاولة مرة أخرى");
+      setFile(null);
+      setCompressedFile(null);
+    } finally {
+      setIsCompressing(false);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (selected) {
-      setDropError(null);
-      setFile(selected);
+      processFile(selected);
     }
   };
 
@@ -72,12 +98,7 @@ export function TaskExecutionModal({
       setDropError("يرجى رفع صورة فقط (JPEG أو PNG)");
       return;
     }
-    if (dropped.size > 5 * 1024 * 1024) {
-      setDropError("حجم الصورة يجب أن لا يتجاوز 5 ميغابايت");
-      return;
-    }
-    setDropError(null);
-    setFile(dropped);
+    processFile(dropped);
   };
 
   return (
@@ -148,20 +169,41 @@ export function TaskExecutionModal({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  name="proof"
                   accept="image/jpeg,image/png"
                   onChange={handleFileChange}
                   className="hidden"
                   aria-label="رفع صورة الإثبات"
+                />
+                {/* Hidden input carries the compressed file for form submission */}
+                <input
+                  ref={compressedInputRef}
+                  type="file"
+                  name="proof"
+                  className="hidden"
+                  tabIndex={-1}
+                  aria-hidden="true"
                 />
                 {file ? (
                   <div>
                     <p className="text-sm text-slate-900 font-medium">
                       {file.name}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
+                    {isCompressing ? (
+                      <p className="text-xs text-amber-600 mt-1">جارٍ ضغط الصورة...</p>
+                    ) : compressedFile ? (
+                      <p className="text-xs text-slate-500 mt-1">
+                        {(compressedFile.size / 1024 / 1024).toFixed(2)} MB
+                        {compressedFile.size < file.size && (
+                          <span className="text-emerald-600 ms-1">
+                            (تم الضغط من {(file.size / 1024 / 1024).toFixed(1)} MB)
+                          </span>
+                        )}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-slate-500 mt-1">
+                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <div>
@@ -169,7 +211,7 @@ export function TaskExecutionModal({
                       اضغط أو اسحب صورة الإثبات هنا
                     </p>
                     <p className="text-xs text-slate-400 mt-1">
-                      JPEG أو PNG — حتى 5 MB
+                      JPEG أو PNG — يتم ضغط الصور الكبيرة تلقائياً
                     </p>
                   </div>
                 )}
@@ -185,7 +227,7 @@ export function TaskExecutionModal({
                 </p>
               )}
 
-              <SubmitButton />
+              <SubmitButton disabled={isCompressing || !compressedFile} />
             </form>
           </div>
         </div>
