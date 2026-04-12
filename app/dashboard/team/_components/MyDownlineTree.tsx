@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { TreeNode } from "./treeUtils";
 import { ChevronDown, Users } from "lucide-react";
+import { LocalDate } from "@/components/ui/LocalDate";
 
 function ChevronIcon({ expanded }: { expanded: boolean }) {
   return (
@@ -63,11 +64,7 @@ function TreeNodeItem({
 
         <span className="text-xs text-slate-400 flex items-center gap-1" dir="ltr">
           <span className="hidden sm:inline text-slate-300 me-0.5" dir="rtl">انضم</span>
-          {new Date(node.created_at).toLocaleDateString("ar-EG", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })}
+          <LocalDate iso={node.created_at} options={{ day: "numeric", month: "short", year: "numeric" }} />
         </span>
       </button>
 

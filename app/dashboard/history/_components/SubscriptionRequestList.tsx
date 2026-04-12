@@ -1,5 +1,6 @@
 import type { PackageSubscriptionRequest } from "../data";
 import { PackageOpen } from "lucide-react";
+import { LocalDate } from "@/components/ui/LocalDate";
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
@@ -58,9 +59,7 @@ export function SubscriptionRequestList({
               <span className="font-bold text-slate-600">
                 <span dir="ltr">${req.amount_paid.toFixed(2)}</span>
               </span>
-              <span className="text-slate-400 text-xs font-medium">
-                {new Date(req.created_at).toLocaleDateString("ar-EG")}
-              </span>
+              <LocalDate iso={req.created_at} className="text-slate-400 text-xs font-medium" />
             </div>
             {req.rejection_reason && (
               <p className="text-red-500 text-xs font-medium mt-2">

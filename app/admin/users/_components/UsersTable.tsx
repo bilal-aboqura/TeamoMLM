@@ -6,6 +6,7 @@ import Link from "next/link";
 import { EditLevelPanel } from "./EditLevelPanel";
 import { AdjustBalancePanel } from "./AdjustBalancePanel";
 import { toggleUserStatus, deleteUserAction } from "@/app/admin/actions";
+import { LocalDate } from "@/components/ui/LocalDate";
 
 type UserRow = {
   id: string;
@@ -327,9 +328,7 @@ export function UsersTable({
                         <p className="text-sm font-medium text-slate-900 leading-tight">
                           {user.full_name}
                         </p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          {new Date(user.created_at).toLocaleDateString("ar")}
-                        </p>
+                        <LocalDate iso={user.created_at} className="text-[11px] text-slate-400 mt-0.5 block" />
                       </div>
                     </div>
                   </td>

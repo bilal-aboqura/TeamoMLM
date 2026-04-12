@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SalariesDashboard } from "./_components/SalariesDashboard";
+import { LocalDate } from "@/components/ui/LocalDate";
 
 const RANK_FINANCIALS = [
   { level: 1, label: "قائد 1", reward: 20, salary: 10 },
@@ -147,9 +148,7 @@ export default async function SalariesPage() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         {leader.last_salary_paid_at ? (
-                          <span className="text-xs text-slate-500">
-                            {new Date(leader.last_salary_paid_at as string).toLocaleDateString("ar")}
-                          </span>
+                          <LocalDate iso={leader.last_salary_paid_at as string} className="text-xs text-slate-500" />
                         ) : (
                           <span className="text-xs text-slate-400 italic">غير متوفر</span>
                         )}

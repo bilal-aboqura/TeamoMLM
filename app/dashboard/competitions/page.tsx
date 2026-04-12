@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Trophy, Calendar, Gift, Clock } from "lucide-react";
+import { LocalDateTime } from "@/components/ui/LocalDate";
 
 export const metadata = {
   title: "المسابقات اليومية",
@@ -112,19 +113,9 @@ export default async function CompetitionsPage() {
                 <div className="flex items-center gap-2 text-xs text-slate-400 mb-4" dir="ltr">
                   <Calendar className="w-3.5 h-3.5 shrink-0" />
                   <span>
-                    {new Date(comp.start_time).toLocaleDateString("ar", {
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    <LocalDateTime iso={comp.start_time} options={{ month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }} />
                     {" — "}
-                    {new Date(comp.end_time).toLocaleDateString("ar", {
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    <LocalDateTime iso={comp.end_time} options={{ month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }} />
                   </span>
                 </div>
 

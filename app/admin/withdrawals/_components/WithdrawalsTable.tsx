@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { approveWithdrawal, rejectWithdrawal } from "@/app/admin/actions";
+import { LocalDate } from "@/components/ui/LocalDate";
 
 type WithdrawalRequest = {
   id: string;
@@ -233,9 +234,7 @@ export function WithdrawalsTable({
 
                     {/* Date */}
                     <td className="px-4 py-4 hidden lg:table-cell">
-                      <span className="text-sm text-slate-400">
-                        {new Date(req.created_at).toLocaleDateString("ar")}
-                      </span>
+                      <LocalDate iso={req.created_at} className="text-sm text-slate-400" />
                     </td>
 
                     {/* Actions */}

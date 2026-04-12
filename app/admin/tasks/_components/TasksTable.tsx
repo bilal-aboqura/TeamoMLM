@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { approveTask, rejectTask } from "@/app/admin/actions";
 import { ProofViewerModal } from "@/app/admin/_components/ProofViewerModal";
+import { LocalDate } from "@/components/ui/LocalDate";
 
 type TaskLog = {
   id: string;
@@ -84,11 +85,9 @@ export function TasksTable({ logs }: { logs: TaskLog[] }) {
                       +${Number(log.reward_amount_snapshot).toFixed(2)}
                     </span>
                   </td>
-                  <td className="px-4 py-4 hidden sm:table-cell">
-                    <span className="text-sm text-slate-500">
-                      {new Date(log.created_at).toLocaleDateString("ar")}
-                    </span>
-                  </td>
+                    <td className="px-4 py-4 hidden sm:table-cell">
+                      <LocalDate iso={log.created_at} className="text-sm text-slate-500" />
+                    </td>
                   <td className="px-4 py-4">
                     <button
                       onClick={() => setSelected(log)}

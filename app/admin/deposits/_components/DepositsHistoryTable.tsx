@@ -1,3 +1,5 @@
+import { LocalDate, LocalDateTime } from "@/components/ui/LocalDate";
+
 type HistoryRecord = {
   id: string;
   amount_paid: number;
@@ -107,19 +109,8 @@ export function DepositsHistoryTable({ records }: { records: HistoryRecord[] }) 
                 {/* Date */}
                 <td className="px-4 py-4 hidden md:table-cell">
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-xs text-slate-900 font-medium">
-                      {new Date(rec.created_at).toLocaleDateString("ar", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </span>
-                    <span className="text-[10px] text-slate-400" dir="ltr">
-                      {new Date(rec.created_at).toLocaleTimeString("ar", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
+                    <LocalDate iso={rec.created_at} className="text-xs text-slate-900 font-medium" />
+                    <LocalDateTime iso={rec.created_at} options={{ hour: "2-digit", minute: "2-digit" }} className="text-[10px] text-slate-400" />
                   </div>
                 </td>
 

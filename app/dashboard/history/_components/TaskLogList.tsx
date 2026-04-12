@@ -1,5 +1,6 @@
 import type { TaskCompletionLogEntry } from "../data";
 import { CheckSquare } from "lucide-react";
+import { LocalDate } from "@/components/ui/LocalDate";
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
@@ -58,9 +59,7 @@ export function TaskLogList({
               <span dir="ltr" className="text-emerald-600 font-bold">
                 +${log.reward_amount_snapshot.toFixed(4)}
               </span>
-              <span className="text-slate-400 text-xs font-medium">
-                {new Date(log.completion_date).toLocaleDateString("ar-EG")}
-              </span>
+              <LocalDate iso={log.completion_date} className="text-slate-400 text-xs font-medium" />
             </div>
             {log.rejection_reason && (
               <p className="text-red-500 text-xs font-medium mt-2">

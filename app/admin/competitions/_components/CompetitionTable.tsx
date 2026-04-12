@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateCompetition, deleteCompetition } from "@/app/admin/actions";
 import { Pencil, Trash2, X } from "lucide-react";
+import { LocalDateTime } from "@/components/ui/LocalDate";
 
 type CompetitionRow = {
   id: string;
@@ -21,16 +22,6 @@ function toLocalInput(iso: string): string {
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-// Format UTC timestamp for display (uses browser's local timezone automatically)
-function toLocalDisplay(iso: string): string {
-  return new Date(iso).toLocaleString("ar", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 function EditModal({
@@ -176,8 +167,10 @@ export function CompetitionTable({ competitions }: { competitions: CompetitionRo
                       {comp.terms && <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{comp.terms}</p>}
                     </td>
                     <td className="px-4 py-4 hidden md:table-cell" dir="ltr">
-                      <span className="text-xs text-slate-500">
-                        {toLocalDisplay(comp.start_time)} → {toLocalDisplay(comp.end_time)}
+                      <span className="text-xs text-slate-500 flex items-center gap-1">
+                        <LocalDateTime iso={comp.start_time} options={{ day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }} />
+                        <span> → </span>
+                        <LocalDateTime iso={comp.end_time} options={{ day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }} />
                       </span>
                     </td>
                     <td className="px-4 py-4">

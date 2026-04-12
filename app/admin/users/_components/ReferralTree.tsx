@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { LocalDate } from "@/components/ui/LocalDate";
 
 type TreeNode = {
   id: string;
@@ -147,13 +148,7 @@ function TreeNodeRow({
               {node.children.length} عضو
             </span>
             {!isRoot && (
-              <span className="text-[9px] text-slate-400 font-mono px-1" dir="ltr">
-                {new Date(node.created_at).toLocaleDateString("ar-EG", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </span>
+                <LocalDate iso={node.created_at} options={{ day: "numeric", month: "short", year: "numeric" }} className="text-[9px] text-slate-400 font-mono px-1" />
             )}
           </div>
         </div>

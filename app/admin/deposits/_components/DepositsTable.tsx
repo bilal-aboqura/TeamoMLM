@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { approveDeposit, rejectDeposit } from "@/app/admin/actions";
 import { ProofViewerModal } from "@/app/admin/_components/ProofViewerModal";
+import { LocalDate } from "@/components/ui/LocalDate";
 
 type DepositRequest = {
   id: string;
@@ -103,9 +104,7 @@ export function DepositsTable({ requests }: { requests: DepositRequest[] }) {
 
                   {/* Date */}
                   <td className="px-4 py-4 hidden md:table-cell">
-                    <span className="text-sm text-slate-400">
-                      {new Date(req.created_at).toLocaleDateString("ar")}
-                    </span>
+                    <LocalDate iso={req.created_at} className="text-sm text-slate-400" />
                   </td>
 
                   {/* Action */}

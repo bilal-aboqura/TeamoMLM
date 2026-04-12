@@ -1,4 +1,5 @@
 import { ArrowDownLeft } from "lucide-react";
+import { LocalDate } from "@/components/ui/LocalDate";
 
 type WithdrawalRow = {
   id: string;
@@ -57,7 +58,7 @@ export function WithdrawalsTable({ requests }: { requests: WithdrawalRow[] }) {
                 </div>
                 <div>
                   <p className="font-bold text-slate-900 text-base">سحب أرباح</p>
-                  <p className="text-xs text-slate-400 mt-1">{new Date(req.created_at).toLocaleDateString("ar")} • {req.payment_details}</p>
+                  <p className="text-xs text-slate-400 mt-1"><LocalDate iso={req.created_at} /> • {req.payment_details}</p>
                 </div>
               </div>
 
