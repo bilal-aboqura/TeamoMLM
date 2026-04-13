@@ -17,6 +17,15 @@ export function CompetitionForm() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
+
+    // datetime-local gives a naive string like "2026-04-13T15:00".
+    // Convert to UTC ISO on the client (where the browser knows the real timezone)
+    // before sending to the server action which runs in UTC on Docker.
+    const startLocal = formData.get("start_time") as string;
+    const endLocal = formData.get("end_time") as string;
+    if (startLocal) formData.set("start_time", new Date(startLocal).toISOString());
+    if (endLocal) formData.set("end_time", new Date(endLocal).toISOString());
+
     const result = await createCompetition(formData);
 
     setLoading(false);

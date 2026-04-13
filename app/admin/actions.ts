@@ -468,9 +468,10 @@ export async function createCompetition(
   if (!start_time) return { error: "وقت البداية مطلوب" };
   if (!end_time) return { error: "وقت النهاية مطلوب" };
 
-  // Store as UTC — the browser will display using the user's local timezone
-  const startIso = new Date(start_time + "Z").toISOString();
-  const endIso = new Date(end_time + "Z").toISOString();
+  // The client already converts local datetime values to UTC ISO strings
+  // before sending them here, so we can use them directly.
+  const startIso = start_time;
+  const endIso = end_time;
 
   if (new Date(endIso) <= new Date(startIso))
     return { error: "يجب أن يكون وقت النهاية بعد وقت البداية" };
@@ -510,9 +511,10 @@ export async function updateCompetition(
   if (!start_time) return { error: "وقت البداية مطلوب" };
   if (!end_time) return { error: "وقت النهاية مطلوب" };
 
-  // Store as UTC — the browser will display using the user's local timezone
-  const startIso = new Date(start_time + "Z").toISOString();
-  const endIso = new Date(end_time + "Z").toISOString();
+  // The client already converts local datetime values to UTC ISO strings
+  // before sending them here, so we can use them directly.
+  const startIso = start_time;
+  const endIso = end_time;
 
   if (new Date(endIso) <= new Date(startIso))
     return { error: "يجب أن يكون وقت النهاية بعد وقت البداية" };

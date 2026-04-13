@@ -41,6 +41,13 @@ function EditModal({
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
+
+    // Convert local datetime values to UTC before sending to the server
+    const startLocal = formData.get("start_time") as string;
+    const endLocal = formData.get("end_time") as string;
+    if (startLocal) formData.set("start_time", new Date(startLocal).toISOString());
+    if (endLocal) formData.set("end_time", new Date(endLocal).toISOString());
+
     const result = await updateCompetition(formData);
 
     setLoading(false);
