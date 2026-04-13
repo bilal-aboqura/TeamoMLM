@@ -42,10 +42,7 @@ export function WithdrawalForm({
   useEffect(() => {
     if ("success" in state && state.success === true) {
       formRef.current?.reset();
-      const msg = state.feePct > 0
-        ? `تم إرسال طلب السحب. عمولة ${state.feePct}% ستُخصم (ستستلم $${state.netAmount.toFixed(2)})`
-        : "تم إرسال طلب السحب بنجاح — بدون عمولة";
-      setToast(msg);
+      setToast("تم إرسال طلب السحب بنجاح");
       setTimeout(() => setToast(null), 5000);
       router.refresh();
     }
@@ -110,9 +107,7 @@ export function WithdrawalForm({
             aria-label="مبلغ السحب"
             className="w-full border-0 bg-slate-50 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-emerald-500/20 focus:bg-white outline-none transition-all"
           />
-          <p className="mt-1.5 text-xs text-slate-400">
-            العمولة 0% في الشهر الأول، وتصبح 30% في الشهر الثاني. يمكن إرجاعها إلى 0% عند تحقيق إحالة واحدة على الأقل في الشهر
-          </p>
+
         </div>
 
         <div>
