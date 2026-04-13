@@ -92,9 +92,14 @@ export function WithdrawalForm({
         <h2 className="text-lg font-bold text-slate-900">طلب سحب جديد</h2>
 
         <div>
-          <label htmlFor="amount" className="block text-sm text-slate-500 mb-1">
-            المبلغ (دولار) — الحد الأدنى $10
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label htmlFor="amount" className="block text-sm text-slate-500">
+              المبلغ (دولار) — الحد الأدنى $10
+            </label>
+            <span className="text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full shadow-sm">
+              عمولة السحب صفر
+            </span>
+          </div>
           <input
             id="amount"
             name="amount"
@@ -107,7 +112,6 @@ export function WithdrawalForm({
             aria-label="مبلغ السحب"
             className="w-full border-0 bg-slate-50 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-emerald-500/20 focus:bg-white outline-none transition-all"
           />
-
         </div>
 
         <div>

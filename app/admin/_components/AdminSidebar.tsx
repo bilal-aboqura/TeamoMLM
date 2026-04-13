@@ -3,8 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-
-import { LayoutDashboard, Download, CheckSquare, Banknote, Users, Coins, Trophy, Settings } from "lucide-react";
+import { useState } from "react";
+import { LayoutDashboard, Download, CheckSquare, Banknote, Users, Coins, Trophy, Settings, LogOut } from "lucide-react";
+import { logoutUser } from "@/app/(auth)/actions";
 
 const navLinks = [
   {
@@ -88,6 +89,14 @@ function SidebarLink({
 }
 
 export function AdminSidebar() {
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    await logoutUser();
+    window.location.href = "/login";
+  };
+
   return (
     <aside className="hidden lg:flex flex-col fixed inset-y-0 start-0 w-64 bg-slate-50 border-e border-slate-200/60 z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
       {/* Brand */}
@@ -120,8 +129,22 @@ export function AdminSidebar() {
         ))}
       </nav>
 
+      {/* Logout */}
+      <div className="px-3 pt-2 pb-2">
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-rose-500 hover:bg-rose-50 hover:text-rose-600 w-full disabled:opacity-50"
+        >
+          <span className="text-rose-400 group-hover:text-rose-500">
+            <LogOut className="w-4 h-4" strokeWidth={2} />
+          </span>
+          <span>{loggingOut ? "جارٍ الخروج..." : "تسجيل الخروج"}</span>
+        </button>
+      </div>
+
       {/* Footer */}
-      <div className="px-6 py-4">
+      <div className="px-6 py-4 border-t border-slate-200/60">
         <p className="text-[10px] text-slate-400 text-center">
           Teamo Admin © {new Date().getFullYear()}
         </p>

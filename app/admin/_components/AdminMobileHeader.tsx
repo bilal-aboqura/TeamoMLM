@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Download, CheckSquare, Banknote, Users, Coins, Trophy, Settings, Menu, X } from "lucide-react";
+import { LayoutDashboard, Download, CheckSquare, Banknote, Users, Coins, Trophy, Settings, Menu, X, LogOut } from "lucide-react";
+import { logoutUser } from "@/app/(auth)/actions";
 
 const navLinks = [
   {
@@ -57,6 +58,13 @@ export function AdminDrawer({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    await logoutUser();
+    window.location.href = "/login";
+  };
 
   if (!open) return null;
 
@@ -122,7 +130,18 @@ export function AdminDrawer({
           })}
         </nav>
 
-        <div className="px-5 py-4">
+        <div className="px-3 pt-2 pb-2">
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all duration-200 w-full text-rose-500 hover:bg-rose-50 disabled:opacity-50"
+          >
+            <span className="text-rose-400"><LogOut className="w-5 h-5" strokeWidth={2} /></span>
+            <span>{loggingOut ? "جارٍ الخروج..." : "تسجيل الخروج"}</span>
+          </button>
+        </div>
+
+        <div className="px-5 py-4 border-t border-slate-200/60">
           <p className="text-[10px] text-slate-400 text-center">
             Teamo Admin © {new Date().getFullYear()}
           </p>
