@@ -14,6 +14,7 @@ export default async function TasksPage() {
     .select(
       "id, title, platform_label, action_url, reward_amount, required_vip_level, display_order, is_active"
     )
+    .eq("is_active", true)
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: false });
 
