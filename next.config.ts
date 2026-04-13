@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   experimental: {
     serverActions: {
-      bodySizeLimit: "6mb",
+      bodySizeLimit: "50mb",
     },
   },
 };

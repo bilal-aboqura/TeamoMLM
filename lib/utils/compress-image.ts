@@ -4,7 +4,7 @@
  * reasonable visual quality via iterative quality reduction.
  */
 
-const MAX_OUTPUT_SIZE = 4.5 * 1024 * 1024; // 4.5 MB — leaves headroom for FormData overhead
+const MAX_OUTPUT_SIZE = 45 * 1024 * 1024;
 const MAX_DIMENSION = 2048; // Cap width/height to control pixel budget
 const INITIAL_QUALITY = 0.85;
 const QUALITY_STEP = 0.1;
