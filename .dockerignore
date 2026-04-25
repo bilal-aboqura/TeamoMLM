@@ -1,0 +1,16 @@
+node_modules/
+.git/
+.next/
+out/
+dist/
+build/
+coverage/
+*.log*
+.env*
+Dockerfile*
+.dockerignore
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+Thumbs.db
+.DS_Store

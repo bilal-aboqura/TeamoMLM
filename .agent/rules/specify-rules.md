@@ -1,6 +1,6 @@
 ﻿# TEMO Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-07
+Auto-generated from all feature plans. Last updated: 2026-04-25
 
 ## Active Technologies
 - TypeScript 5 / Next.js 15 (App Router) + `@supabase/ssr`, `@supabase/supabase-js`, `zod` (already installed from `001-auth-profile`) (002-packages-tasks)
@@ -11,6 +11,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-07
 - Supabase PostgreSQL (new migration `20260406000010`) (006-wallet-withdrawals)
 - TypeScript / Next.js 14 (App Router) + Supabase SSR (`@supabase/ssr`), Tailwind CSS, React 18 (007-user-referrals-tree)
 - Supabase PostgreSQL — new tables: `user_referral_stats`, `referral_commissions` (007-user-referrals-tree)
+- TypeScript 5.x / Next.js 14 (App Router) + Supabase JS SDK (`@supabase/ssr`), Zod, `lucide-react`, Tailwind CSS (009-profit-shares-equity)
+- Supabase PostgreSQL + Supabase Storage (`equity-receipts` private bucket) (009-profit-shares-equity)
 
 - TypeScript 5 / Next.js 15 (App Router) + `@supabase/ssr`, `@supabase/supabase-js`, `zod`, `next` (001-auth-profile)
 
@@ -30,9 +32,9 @@ npm test; npm run lint
 TypeScript 5 / Next.js 15 (App Router): Follow standard conventions
 
 ## Recent Changes
+- 009-profit-shares-equity: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+- 009-profit-shares-equity: Added TypeScript 5.x / Next.js 14 (App Router) + Supabase JS SDK (`@supabase/ssr`), Zod, `lucide-react`, Tailwind CSS
 - 008-public-landing-page: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
-- 007-user-referrals-tree: Added TypeScript / Next.js 14 (App Router) + Supabase SSR (`@supabase/ssr`), Tailwind CSS, React 18
-- 006-wallet-withdrawals: Added TypeScript 5 / Next.js 15 App Router (React 19) + Supabase JS v2 (`@supabase/ssr`), Zod, Tailwind CSS v3
 
 
 <!-- MANUAL ADDITIONS START -->

@@ -19,6 +19,11 @@ const navLinks = [
     icon: <Download className="w-5 h-5" strokeWidth={2} />,
   },
   {
+    href: "/admin/equity-requests",
+    label: "طلبات حصص الأرباح",
+    icon: <Coins className="w-5 h-5" strokeWidth={2} />,
+  },
+  {
     href: "/admin/tasks",
     label: "إدارة المهام",
     icon: <CheckSquare className="w-5 h-5" strokeWidth={2} />,
