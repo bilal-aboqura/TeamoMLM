@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { SuspendedBanner } from "./_components/SuspendedBanner";
+import { NotificationBadge } from "@/components/NotificationBadge";
 
 export default async function DashboardLayout({
   children,
@@ -30,5 +31,12 @@ export default async function DashboardLayout({
     return <SuspendedBanner reason={profile.suspension_reason} />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <div className="fixed end-4 top-4 z-40">
+        <NotificationBadge />
+      </div>
+      {children}
+    </>
+  );
 }

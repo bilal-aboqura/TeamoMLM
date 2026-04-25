@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Download, CheckSquare, Banknote, Users, Coins, Trophy, Settings, Menu, X, LogOut } from "lucide-react";
+import { LayoutDashboard, Download, CheckSquare, Banknote, Users, Coins, Trophy, Settings, Menu, X, LogOut, TrendingUp } from "lucide-react";
 import { logoutUser } from "@/app/(auth)/actions";
 
 const navLinks = [
@@ -22,6 +22,11 @@ const navLinks = [
     href: "/admin/equity-requests",
     label: "طلبات حصص الأرباح",
     icon: <Coins className="w-5 h-5" strokeWidth={2} />,
+  },
+  {
+    href: "/admin/investments",
+    label: "الاستثمارات",
+    icon: <TrendingUp className="w-5 h-5" strokeWidth={2} />,
   },
   {
     href: "/admin/tasks",
