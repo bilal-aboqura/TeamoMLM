@@ -20,6 +20,27 @@ export default async function TasksPage() {
     .eq("id", user.id)
     .maybeSingle();
 
+  const { data: overdueDebt } = await supabase
+    .from("pay_later_debts")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("status", "overdue")
+    .maybeSingle();
+
+  if (overdueDebt) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-6">
+        <div className="rounded-2xl border border-rose-100 bg-rose-50 p-5 text-center">
+          <h1 className="text-lg font-bold text-rose-700">المهام متوقفة مؤقتاً</h1>
+          <p className="mt-2 text-sm leading-relaxed text-rose-600">
+            لديك دين دفع لاحق متأخر. يرجى سداد الدين من صفحة الدفع لاحقاً
+            لإعادة تفعيل المهام.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!profile?.current_package_level) {
     return (
       <div className="max-w-md mx-auto px-4 py-6">

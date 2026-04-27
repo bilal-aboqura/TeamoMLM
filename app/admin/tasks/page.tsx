@@ -70,7 +70,7 @@ export default async function TasksPage() {
     <div>
       <div className="mb-10">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900">إدارة المهام</h1>
+          <h1 className="text-2xl font-bold text-slate-900">إدارة المهام اليومية</h1>
           <p className="text-slate-500 text-sm mt-1">
             أضف وعدّل وحذف المهام اليومية المتاحة للمستخدمين
           </p>
@@ -80,7 +80,7 @@ export default async function TasksPage() {
 
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-semibold text-slate-900">
-            المهام الحالية
+            المهام اليومية الحالية
             <span className="ms-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">
               {tasks.length}
             </span>

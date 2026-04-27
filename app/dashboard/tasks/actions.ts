@@ -49,6 +49,22 @@ export async function submitTaskProof(
     .eq("id", user.id)
     .maybeSingle();
 
+  const { data: overdueDebt } = await supabase
+    .from("pay_later_debts")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("status", "overdue")
+    .maybeSingle();
+
+  if (overdueDebt) {
+    return {
+      error: {
+        field: "general",
+        message: "المهام متوقفة حتى يتم سداد دين الدفع لاحقاً المتأخر.",
+      },
+    };
+  }
+
   if (!profile?.current_package_level) {
     return {
       error: {

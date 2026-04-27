@@ -62,6 +62,14 @@ export async function submitWithdrawal(
         },
       };
     }
+    if (msg.includes("pay_later_overdue")) {
+      return {
+        error: {
+          field: "general",
+          message: "السحب متوقف حتى يتم سداد دين الدفع لاحقاً المتأخر.",
+        },
+      };
+    }
     if (msg.includes("below_minimum")) {
       return {
         error: {
@@ -89,4 +97,3 @@ export async function submitWithdrawal(
 
   return { success: true, feePct, netAmount };
 }
-

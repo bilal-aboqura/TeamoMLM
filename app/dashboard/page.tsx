@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Wallet, Package, CheckSquare, ClipboardList, Users, Rocket, Trophy, CreditCard, Info, Coins, BarChart2 } from "lucide-react";
+import { Wallet, Package, CheckSquare, ClipboardList, Users, Rocket, Trophy, CreditCard, Info, Coins, BarChart2, Smartphone } from "lucide-react";
 import { BalanceCard } from "./_components/BalanceCard";
 import { PackageStatusBadge } from "./_components/PackageStatusBadge";
 import { ReferralTool } from "./_components/ReferralTool";
@@ -106,6 +106,15 @@ export default async function DashboardPage() {
                   <CheckSquare className="w-6 h-6" strokeWidth={2} />
                 </div>
                 <span className="text-sm font-medium text-slate-700">المهام</span>
+              </Link>
+              <Link
+                href="/dashboard/app-profits"
+                className="bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] group flex flex-col items-center justify-center gap-2"
+              >
+                <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center transition-colors group-hover:bg-emerald-50 text-slate-400 group-hover:text-emerald-600">
+                  <Smartphone className="w-6 h-6" strokeWidth={2} />
+                </div>
+                <span className="text-sm font-medium text-slate-700">الربح بالتطبيقات</span>
               </Link>
               <Link
                 href="/dashboard/history"

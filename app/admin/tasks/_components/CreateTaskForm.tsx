@@ -208,7 +208,7 @@ export function CreateTaskForm() {
               />
             </svg>
             <p className="text-sm text-emerald-700 font-medium">
-              تمت إضافة المهمة بنجاح وتحديث لوحة المهام
+              تمت إضافة المهمة بنجاح وتحديث لوحة المهام اليومية
             </p>
           </div>
         )}

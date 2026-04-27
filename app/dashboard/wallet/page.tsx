@@ -20,7 +20,7 @@ export default async function WalletPage() {
 
   if (!user) redirect("/login");
 
-  const [userResult, summaryResult, requestsResult] = await Promise.all([
+  const [userResult, summaryResult, requestsResult, payLaterResult] = await Promise.all([
     supabase
       .from("users")
       .select("wallet_balance, status")
@@ -36,6 +36,11 @@ export default async function WalletPage() {
       .select("id, amount, payment_details, status, rejection_reason, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("pay_later_debts")
+      .select("locked_profit, status")
+      .eq("user_id", user.id)
+      .in("status", ["active", "pending_review", "overdue"]),
   ]);
 
   const userRow = userResult.data;
@@ -49,21 +54,29 @@ export default async function WalletPage() {
     .filter((r) => r.status === "pending")
     .reduce((sum, r) => sum + Number(r.amount), 0);
 
-  const isSuspended = userRow.status === "suspended";
+  const lockedProfit = (payLaterResult.data ?? []).reduce(
+    (sum, debt) => sum + Number(debt.locked_profit),
+    0
+  );
+  const hasOverdueDebt = (payLaterResult.data ?? []).some(
+    (debt) => debt.status === "overdue"
+  );
+  const availableBalance = Math.max(0, Number(userRow.wallet_balance) - lockedProfit);
+  const isSuspended = userRow.status === "suspended" || hasOverdueDebt;
 
   return (
     <main dir="rtl" className="max-w-3xl mx-auto p-6 space-y-8">
       <h1 className="text-2xl font-bold text-slate-900">المحفظة</h1>
 
       <WalletStatsCards
-        availableBalance={Number(userRow.wallet_balance)}
+        availableBalance={availableBalance}
         totalWithdrawn={totalWithdrawn}
         pendingWithdrawals={pendingWithdrawals}
       />
 
       <WithdrawalForm
         isSuspended={isSuspended}
-        availableBalance={Number(userRow.wallet_balance)}
+        availableBalance={availableBalance}
       />
 
       <WithdrawalsTable requests={requestsResult.data ?? []} />

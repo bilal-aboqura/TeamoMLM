@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Download, CheckSquare, Banknote, Users, Coins, Trophy, Settings, Menu, X, LogOut, TrendingUp } from "lucide-react";
+import { LayoutDashboard, Download, CheckSquare, Banknote, Users, Coins, Trophy, Settings, Menu, X, LogOut, TrendingUp, Smartphone, ClipboardList, CreditCard } from "lucide-react";
 import { logoutUser } from "@/app/(auth)/actions";
 
 const navLinks = [
@@ -34,9 +34,29 @@ const navLinks = [
     icon: <CheckSquare className="w-5 h-5" strokeWidth={2} />,
   },
   {
+    href: "/admin/app-profits/manage",
+    label: "إدارة تطبيقات الربح",
+    icon: <Smartphone className="w-5 h-5" strokeWidth={2} />,
+  },
+  {
+    href: "/admin/app-profits/reviews",
+    label: "مراجعة إثباتات التطبيقات",
+    icon: <ClipboardList className="w-5 h-5" strokeWidth={2} />,
+  },
+  {
+    href: "/admin/app-profits/withdrawals",
+    label: "سحوبات أرباح التطبيقات",
+    icon: <Banknote className="w-5 h-5" strokeWidth={2} />,
+  },
+  {
     href: "/admin/withdrawals",
     label: "طلبات السحب",
     icon: <Banknote className="w-5 h-5" strokeWidth={2} />,
+  },
+  {
+    href: "/admin/pay-later",
+    label: "الدفع لاحقاً",
+    icon: <CreditCard className="w-5 h-5" strokeWidth={2} />,
   },
   {
     href: "/admin/users",

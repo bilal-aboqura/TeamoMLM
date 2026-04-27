@@ -27,7 +27,7 @@ export function TasksTable({ logs }: { logs: TaskLog[] }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <p className="text-slate-600 font-medium">المهام مكتملة</p>
+        <p className="text-slate-600 font-medium">كل المهام مكتملة</p>
         <p className="text-slate-400 text-sm mt-1">لا توجد إثباتات مهام معلقة حالياً</p>
       </div>
     );

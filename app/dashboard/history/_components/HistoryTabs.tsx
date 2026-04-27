@@ -31,7 +31,7 @@ export function HistoryTabs({
         </button>
         <button
           onClick={() => setActiveTab("tasks")}
-          aria-label="سجل المهام"
+          aria-label="سجل المهام اليومية"
           className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
             activeTab === "tasks"
               ? "bg-white shadow-sm text-slate-900"
