@@ -26,17 +26,25 @@ export function InvestmentClientShell({
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const pendingDeposit = latestDeposit?.status === "pending";
+  const openDepositModal = () => {
+    if (pendingDeposit) return;
+    setDepositOpen(true);
+  };
 
   return (
     <>
       {summary.isEmpty ? (
-        <EmptyInvestmentState onDepositClick={() => setDepositOpen(true)} />
+        <EmptyInvestmentState
+          depositDisabled={pendingDeposit}
+          onDepositClick={openDepositModal}
+        />
       ) : (
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"
-            onClick={() => setDepositOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition-all hover:bg-emerald-700 active:scale-95"
+            disabled={pendingDeposit}
+            onClick={openDepositModal}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition-all hover:bg-emerald-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Plus className="h-4 w-4" strokeWidth={2} />
             إيداع جديد

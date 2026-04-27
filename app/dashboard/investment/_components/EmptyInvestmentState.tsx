@@ -4,8 +4,10 @@ import { TrendingUp } from "lucide-react";
 
 export function EmptyInvestmentState({
   onDepositClick,
+  depositDisabled = false,
 }: {
   onDepositClick: () => void;
+  depositDisabled?: boolean;
 }) {
   return (
     <section className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
@@ -20,8 +22,9 @@ export function EmptyInvestmentState({
       </p>
       <button
         type="button"
+        disabled={depositDisabled}
         onClick={onDepositClick}
-        className="mt-6 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-emerald-700 active:scale-95"
+        className="mt-6 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-emerald-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
       >
         إيداع رأس المال
       </button>

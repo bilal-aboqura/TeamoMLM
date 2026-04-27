@@ -75,11 +75,14 @@ export async function submitInvestmentDeposit(
   if (error) {
     await adminClient.storage.from("investment-receipts").remove([storagePath]);
 
-    if (error.message.includes("already_active")) {
+    if (
+      error.message.includes("pending_deposit_exists") ||
+      error.message.includes("already_active")
+    ) {
       return {
         error: {
           field: "general",
-          message: "لديك طلب إيداع معلق أو استثمار نشط بالفعل",
+          message: "لديك طلب إيداع معلق للمراجعة بالفعل",
         },
       };
     }
