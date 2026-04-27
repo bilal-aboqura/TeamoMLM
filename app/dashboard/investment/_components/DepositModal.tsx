@@ -4,7 +4,6 @@ import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Copy, ReceiptText, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { INVESTMENT_TIERS, resolveTier } from "@/lib/investment/tiers";
 import { submitInvestmentDeposit } from "../actions";
 import type { InvestmentActionResult } from "@/lib/validations/investment-schemas";
@@ -30,18 +29,15 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
 export function DepositModal({
   open,
   onClose,
-  userId,
   walletAddress,
 }: {
   open: boolean;
   onClose: () => void;
-  userId: string;
   walletAddress: string | null;
 }) {
   const [state, formAction] = useActionState(submitInvestmentDeposit, initialState);
   const [amount, setAmount] = useState("");
-  const [receiptUrl, setReceiptUrl] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const [receiptName, setReceiptName] = useState("");
   const [clientError, setClientError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const router = useRouter();
@@ -50,34 +46,14 @@ export function DepositModal({
   useEffect(() => {
     if ("success" in state && state.success) {
       setAmount("");
-      setReceiptUrl("");
+      setReceiptName("");
+      setClientError(null);
       onClose();
       router.refresh();
     }
   }, [state, onClose, router]);
 
   if (!open) return null;
-
-  const uploadReceipt = async (file: File) => {
-    setClientError(null);
-    if (!file.type.startsWith("image/")) {
-      setClientError("يرجى رفع صورة فقط");
-      return;
-    }
-    setUploading(true);
-    const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-    const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-    const supabase = createClient();
-    const { error } = await supabase.storage
-      .from("investment-receipts")
-      .upload(path, file, { contentType: file.type, upsert: false });
-    setUploading(false);
-    if (error) {
-      setClientError("تعذر رفع الإيصال");
-      return;
-    }
-    setReceiptUrl(path);
-  };
 
   const actionError = "error" in state ? state.error.message : null;
 
@@ -89,7 +65,12 @@ export function DepositModal({
             <h3 className="text-lg font-black text-slate-900">إيداع رأس المال</h3>
             <p className="mt-1 text-sm text-slate-500">اختر المبلغ وارفع إيصال التحويل</p>
           </div>
-          <button type="button" onClick={onClose} aria-label="إغلاق" className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="إغلاق"
+            className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+          >
             <X className="h-5 w-5" strokeWidth={2} />
           </button>
         </div>
@@ -98,7 +79,9 @@ export function DepositModal({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-5">
             {INVESTMENT_TIERS.map((item) => (
               <div key={item.percentage} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                <p className="text-lg font-black text-emerald-600" dir="ltr">{item.percentage}%</p>
+                <p className="text-lg font-black text-emerald-600" dir="ltr">
+                  {item.percentage}%
+                </p>
                 <p className="mt-1 text-xs text-slate-500" dir="ltr">
                   ${item.minAmount}{item.maxAmount ? ` - $${item.maxAmount}` : "+"}
                 </p>
@@ -112,36 +95,77 @@ export function DepositModal({
               <code className="min-w-0 flex-1 break-all text-sm" dir="ltr">
                 {walletAddress ?? "Payment address is not configured"}
               </code>
-              <button type="button" disabled={!walletAddress} onClick={async () => {
-                if (!walletAddress) return;
-                await navigator.clipboard.writeText(walletAddress);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 1500);
-              }} className="rounded-lg bg-white/10 p-2 hover:bg-white/20 disabled:opacity-40" aria-label="نسخ عنوان الدفع">
+              <button
+                type="button"
+                disabled={!walletAddress}
+                onClick={async () => {
+                  if (!walletAddress) return;
+                  await navigator.clipboard.writeText(walletAddress);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                }}
+                className="rounded-lg bg-white/10 p-2 hover:bg-white/20 disabled:opacity-40"
+                aria-label="نسخ عنوان الدفع"
+              >
                 <Copy className="h-4 w-4" strokeWidth={2} />
               </button>
             </div>
             {copied ? <p className="mt-2 text-xs text-emerald-300">تم النسخ</p> : null}
           </div>
 
-          <input type="hidden" name="receiptUrl" value={receiptUrl} />
-          <label className="block text-sm font-bold text-slate-700" htmlFor="amount">المبلغ</label>
-          <input id="amount" name="amount" value={amount} onChange={(e) => setAmount(e.target.value)} type="number" min="100" step="0.01" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" placeholder="500" dir="ltr" />
+          <label className="block text-sm font-bold text-slate-700" htmlFor="amount">
+            المبلغ
+          </label>
+          <input
+            id="amount"
+            name="amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            type="number"
+            min="100"
+            step="0.01"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            placeholder="500"
+            dir="ltr"
+          />
           {tier ? <p className="text-sm font-semibold text-emerald-600">النسبة المختارة: {tier}%</p> : null}
 
           <label className="block cursor-pointer rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center hover:border-emerald-300 hover:bg-emerald-50/40">
-            <input type="file" accept="image/*" className="hidden" onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) void uploadReceipt(file);
-            }} />
+            <input
+              type="file"
+              name="receipt"
+              accept="image/*"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                setClientError(null);
+
+                if (!file) {
+                  setReceiptName("");
+                  return;
+                }
+
+                if (!file.type.startsWith("image/")) {
+                  setReceiptName("");
+                  setClientError("يرجى رفع صورة فقط");
+                  return;
+                }
+
+                setReceiptName(file.name);
+              }}
+            />
             <ReceiptText className="mx-auto h-8 w-8 text-slate-400" strokeWidth={2} />
-            <p className="mt-3 text-sm font-semibold text-slate-700">
-              {uploading ? "جارٍ رفع الإيصال..." : receiptUrl ? "تم رفع الإيصال" : "ارفع صورة إيصال الدفع"}
+            <p className="mt-3 break-words text-sm font-semibold text-slate-700">
+              {receiptName || "ارفع صورة إيصال الدفع"}
             </p>
           </label>
 
-          {(clientError || actionError) ? <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{clientError ?? actionError}</p> : null}
-          <SubmitButton disabled={!walletAddress || !receiptUrl || uploading} />
+          {clientError || actionError ? (
+            <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+              {clientError ?? actionError}
+            </p>
+          ) : null}
+          <SubmitButton disabled={!walletAddress || !receiptName} />
         </form>
       </div>
     </div>

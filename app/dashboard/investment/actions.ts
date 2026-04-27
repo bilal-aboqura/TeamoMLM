@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier } from "@/lib/investment/tiers";
 import {
@@ -15,7 +16,7 @@ export async function submitInvestmentDeposit(
 ): Promise<InvestmentActionResult<{ depositId: string }>> {
   const parsed = submitDepositSchema.safeParse({
     amount: formData.get("amount"),
-    receiptUrl: formData.get("receiptUrl"),
+    receipt: formData.get("receipt"),
   });
 
   if (!parsed.success) {
@@ -42,14 +43,38 @@ export async function submitInvestmentDeposit(
     return { error: { field: "general", message: "يرجى تسجيل الدخول أولاً" } };
   }
 
+  const { receipt } = parsed.data;
+  const ext =
+    receipt.type === "image/png"
+      ? "png"
+      : receipt.type === "image/webp"
+        ? "webp"
+        : "jpg";
+  const storagePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
+  const buffer = await receipt.arrayBuffer();
+  const adminClient = createAdminClient();
+
+  const { error: uploadError } = await adminClient.storage
+    .from("investment-receipts")
+    .upload(storagePath, buffer, {
+      contentType: receipt.type,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    return { error: { field: "general", message: "تعذر رفع الإيصال" } };
+  }
+
   const { data, error } = await supabase.rpc("user_submit_investment_deposit", {
     p_user_id: user.id,
     p_amount: parsed.data.amount,
     p_tier_pct: tier,
-    p_receipt_url: parsed.data.receiptUrl,
+    p_receipt_url: storagePath,
   });
 
   if (error) {
+    await adminClient.storage.from("investment-receipts").remove([storagePath]);
+
     if (error.message.includes("already_active")) {
       return {
         error: {

@@ -81,7 +81,6 @@ export default async function InvestmentPage() {
         </header>
 
         <InvestmentClientShell
-          userId={user.id}
           walletAddress={walletAddress}
           summary={summary}
           latestDeposit={latestDeposit}

@@ -14,13 +14,11 @@ type DepositState = {
 
 export function InvestmentClientShell({
   children,
-  userId,
   walletAddress,
   summary,
   latestDeposit,
 }: {
   children: React.ReactNode;
-  userId: string;
   walletAddress: string | null;
   summary: InvestmentSummary;
   latestDeposit: DepositState;
@@ -73,7 +71,6 @@ export function InvestmentClientShell({
       <DepositModal
         open={depositOpen}
         onClose={() => setDepositOpen(false)}
-        userId={userId}
         walletAddress={walletAddress}
       />
       <WithdrawModal
