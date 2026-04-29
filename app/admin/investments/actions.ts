@@ -10,6 +10,10 @@ import {
   adminRejectWithdrawalSchema,
   type AdminInvestmentActionResult,
 } from "@/lib/validations/investment-schemas";
+import {
+  isMissingSchema,
+  writeFinancialControlsFallback,
+} from "@/lib/db/financial-controls-fallback";
 
 async function verifyAdmin(): Promise<string | null> {
   const supabase = await createClient();
@@ -52,7 +56,7 @@ export async function approveInvestmentDeposit(
 
   revalidatePath("/admin/investments");
   revalidatePath("/dashboard/investment");
-  return { success: true };
+  return { success: true as const };
 }
 
 export async function rejectInvestmentDeposit(
@@ -74,7 +78,7 @@ export async function rejectInvestmentDeposit(
 
   revalidatePath("/admin/investments");
   revalidatePath("/dashboard/investment");
-  return { success: true };
+  return { success: true as const };
 }
 
 export async function approveInvestmentWithdrawal(
@@ -94,7 +98,7 @@ export async function approveInvestmentWithdrawal(
 
   revalidatePath("/admin/investments");
   revalidatePath("/dashboard/investment");
-  return { success: true };
+  return { success: true as const };
 }
 
 export async function rejectInvestmentWithdrawal(
@@ -116,5 +120,117 @@ export async function rejectInvestmentWithdrawal(
 
   revalidatePath("/admin/investments");
   revalidatePath("/dashboard/investment");
-  return { success: true };
+  return { success: true as const };
+}
+
+export async function updateTradingReport(formData: FormData) {
+  const adminId = await verifyAdmin();
+  if (!adminId) return { error: "غير مصرح لك بهذا الإجراء" };
+
+  let totalTrades = Number(formData.get("totalTrades"));
+  const wonTrades = Number(formData.get("wonTrades"));
+  const lostTrades = Number(formData.get("lostTrades"));
+  const periodStart = String(formData.get("periodStart") ?? "") || null;
+  const periodEnd = String(formData.get("periodEnd") ?? "") || null;
+  const details = String(formData.get("details") ?? "").trim();
+
+  if (
+    !Number.isInteger(totalTrades) ||
+    !Number.isInteger(wonTrades) ||
+    !Number.isInteger(lostTrades) ||
+    totalTrades < 0 ||
+    wonTrades < 0 ||
+    lostTrades < 0
+  ) {
+    return { error: "بيانات تقرير التداول غير صالحة" };
+  }
+
+  totalTrades = Math.max(totalTrades, wonTrades + lostTrades);
+
+  const adminClient = createAdminClient();
+  const { error } = await adminClient.from("investment_trading_reports").upsert(
+    {
+      id: true,
+      total_trades: totalTrades,
+      won_trades: wonTrades,
+      lost_trades: lostTrades,
+      period_start: periodStart,
+      period_end: periodEnd,
+      details,
+    },
+    { onConflict: "id" }
+  );
+
+  if (error && isMissingSchema(error.message)) {
+    const fallbackResult = await writeFinancialControlsFallback((current) => ({
+      ...current,
+      tradingReport: {
+        totalTrades,
+        won: wonTrades,
+        lost: lostTrades,
+        periodStart,
+        periodEnd,
+        details,
+      },
+    }));
+
+    if (fallbackResult.error) {
+      return {
+        error:
+          "تعذر حفظ تقرير التداول: تأكد من وجود مساحة التخزين proofs أو طبّق migration الإعدادات المالية",
+      };
+    }
+  } else if (error) {
+    return { error: `تعذر حفظ تقرير التداول: ${error.message}` };
+  }
+  revalidatePath("/admin/investments");
+  revalidatePath("/dashboard/investment");
+  return { success: true as const };
+}
+
+export async function sendManualInvestmentProfit(formData: FormData) {
+  const adminId = await verifyAdmin();
+  if (!adminId) return { error: "غير مصرح لك بهذا الإجراء" };
+
+  const userId = String(formData.get("userId") ?? "");
+  const amount = Number(formData.get("amount"));
+  const reason = String(formData.get("reason") ?? "").trim();
+
+  if (!userId || !Number.isFinite(amount) || amount <= 0) {
+    return { error: "المستخدم والمبلغ مطلوبان" };
+  }
+
+  const adminClient = createAdminClient();
+  const { data: account } = await adminClient
+    .from("investment_accounts")
+    .select("user_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!account) return { error: "لا يوجد حساب استثمار نشط لهذا المستخدم" };
+
+  const { data: inserted, error } = await adminClient
+    .from("investment_manual_profits")
+    .insert({
+      user_id: userId,
+      amount,
+      reason,
+      created_by: adminId,
+    })
+    .select("id")
+    .single();
+
+  if (error) return { error: "تعذر إرسال الربح اليدوي" };
+
+  await adminClient.from("financial_audit_log").insert({
+    record_id: inserted.id,
+    record_type: "investment_manual_profit",
+    old_status: "pending",
+    new_status: `credited:${amount}`,
+    changed_by: adminId,
+  });
+
+  revalidatePath("/admin/investments");
+  revalidatePath("/dashboard/investment");
+  return { success: true as const };
 }

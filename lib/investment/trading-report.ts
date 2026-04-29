@@ -3,17 +3,35 @@ export type TradingReport = {
   won: number;
   lost: number;
   netResultPercentage: number;
+  periodStart: string | null;
+  periodEnd: string | null;
+  details: string;
 };
 
-export const TRADING_REPORT = {
-  totalTrades: 12,
-  won: 9,
-  lost: 3,
-};
-
-export function getTradingReport(tierPercentage: number): TradingReport {
+export function buildTradingReport({
+  tierPercentage,
+  totalTrades,
+  won,
+  lost,
+  periodStart,
+  periodEnd,
+  details,
+}: {
+  tierPercentage: number;
+  totalTrades: number;
+  won: number;
+  lost: number;
+  periodStart: string | null;
+  periodEnd: string | null;
+  details: string;
+}): TradingReport {
   return {
-    ...TRADING_REPORT,
+    totalTrades,
+    won,
+    lost,
     netResultPercentage: tierPercentage,
+    periodStart,
+    periodEnd,
+    details,
   };
 }

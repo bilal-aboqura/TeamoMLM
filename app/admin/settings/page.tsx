@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CommissionMatrixForm } from "./_components/CommissionMatrixForm";
-import { PaymentSettingsForm } from "./_components/PaymentSettingsForm";
+import { PaymentTargetsForm } from "./_components/PaymentTargetsForm";
+import { getPaymentTargets } from "@/lib/db/payment-targets";
 
 export type CommissionMatrix = {
   [packageName: string]: {
@@ -25,11 +26,14 @@ const DEFAULT_MATRIX: CommissionMatrix = {
 export default async function SettingsPage() {
   const supabase = createAdminClient();
 
-  const { data: settings } = await supabase
-    .from("admin_settings")
-    .select("id, referral_commission_rates, payment_method_label, payment_address")
-    .eq("is_active", true)
-    .maybeSingle();
+  const [{ data: settings }, paymentTargets] = await Promise.all([
+    supabase
+      .from("admin_settings")
+      .select("id, referral_commission_rates")
+      .eq("is_active", true)
+      .maybeSingle(),
+    getPaymentTargets(),
+  ]);
 
   const matrix: CommissionMatrix = settings?.referral_commission_rates
     ? (settings.referral_commission_rates as CommissionMatrix)
@@ -39,8 +43,8 @@ export default async function SettingsPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900">الإعدادات</h1>
-        <p className="text-slate-500 text-sm mt-1">
-          تكوين عمولات الإحالة الثابتة ومعلومات الدفع
+        <p className="mt-1 text-sm text-slate-500">
+          تكوين عمولات الإحالة وأرقام المحافظ حسب الصفحة
         </p>
       </div>
 
@@ -49,32 +53,26 @@ export default async function SettingsPage() {
           <h2 className="text-base font-semibold text-slate-900">
             مصفوفة عمولات الإحالة (مبالغ ثابتة بالدولار)
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            تُوزع هذه المبالغ الثابتة تلقائياً على شجرة الإحالة عند الموافقة على إيداع المستخدم
+          <p className="mt-1 text-xs text-slate-400">
+            تُوزع هذه المبالغ الثابتة تلقائيًا على شجرة الإحالة عند الموافقة
+            على إيداع المستخدم
           </p>
         </div>
         <CommissionMatrixForm matrix={matrix} />
       </section>
 
-      {settings && (
-        <>
-          <div className="border-t border-slate-100 my-8" />
-          <section>
-            <div className="mb-5">
-              <h2 className="text-base font-semibold text-slate-900">
-                معلومات الدفع
-              </h2>
-              <p className="text-xs text-slate-400 mt-1">
-                تظهر للمستخدمين عند طلب اشتراك في باقة
-              </p>
-            </div>
-            <PaymentSettingsForm
-              initialLabel={settings.payment_method_label ?? ""}
-              initialAddress={settings.payment_address ?? ""}
-            />
-          </section>
-        </>
-      )}
+      <div className="my-8 border-t border-slate-100" />
+      <section>
+        <div className="mb-5">
+          <h2 className="text-base font-semibold text-slate-900">
+            أرقام المحافظ حسب الصفحة
+          </h2>
+          <p className="mt-1 text-xs text-slate-400">
+            كل صفحة مالية تستخدم الرقم الخاص بها عند رفع إثبات الدفع.
+          </p>
+        </div>
+        <PaymentTargetsForm targets={paymentTargets} />
+      </section>
     </div>
   );
 }

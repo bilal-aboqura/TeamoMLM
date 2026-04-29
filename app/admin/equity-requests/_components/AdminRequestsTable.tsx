@@ -92,7 +92,8 @@ export function AdminRequestsTable({
                     ${request.price_usd.toLocaleString("en-US")}
                   </td>
                   <td className="px-4 py-4 text-sm text-slate-500" dir="ltr">
-                    {request.sponsor_referral_code}
+                    <p>{request.buyer_email ?? "لا يوجد بريد"}</p>
+                    <p className="mt-1 text-xs">{request.buyer_phone ?? request.phone_number}</p>
                   </td>
                   <td className="px-4 py-4">
                     <RequestStatusBadge status={request.status} />

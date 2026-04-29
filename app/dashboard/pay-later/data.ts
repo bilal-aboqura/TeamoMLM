@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getPaymentTarget, type PaymentTarget } from "@/lib/db/payment-targets";
 
 export type PayLaterPackage = {
   id: string;
@@ -36,6 +37,7 @@ export type PayLaterDashboardData = {
   recentUpgradeBlocked: boolean;
   activeDebt: PayLaterDebt | null;
   latestDebt: PayLaterDebt | null;
+  paymentTarget: PaymentTarget | null;
 };
 
 export async function getPayLaterDashboardData(
@@ -45,7 +47,13 @@ export async function getPayLaterDashboardData(
 
   await supabase.rpc("process_overdue_pay_later_debts");
 
-  const [{ data: profile }, { data: packages }, { data: logs }, { data: debts }] =
+  const [
+    { data: profile },
+    { data: packages },
+    { data: logs },
+    { data: debts },
+    paymentTarget,
+  ] =
     await Promise.all([
       supabase
         .from("users")
@@ -73,6 +81,7 @@ export async function getPayLaterDashboardData(
         )
         .eq("user_id", userId)
         .order("upgraded_at", { ascending: false }),
+      getPaymentTarget("pay_later"),
     ]);
 
   const packageRows = (packages ?? []).map((pkg) => ({
@@ -125,5 +134,6 @@ export async function getPayLaterDashboardData(
     recentUpgradeBlocked,
     activeDebt,
     latestDebt,
+    paymentTarget,
   };
 }

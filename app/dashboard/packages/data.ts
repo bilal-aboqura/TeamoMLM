@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getPaymentTarget, type PaymentTarget } from "@/lib/db/payment-targets";
 
 export type PackageWithStatus = {
   id: string;
@@ -10,11 +11,7 @@ export type PackageWithStatus = {
   userStatus: "none" | "pending" | "active";
 };
 
-export type PaymentSetting = {
-  payment_method_label: string;
-  payment_address: string;
-  is_active: boolean;
-} | null;
+export type PaymentSetting = PaymentTarget | null;
 
 export async function getPackagesWithUserStatus(
   userId: string
@@ -62,13 +59,5 @@ export async function getPackagesWithUserStatus(
 }
 
 export async function getActivePaymentSetting(): Promise<PaymentSetting> {
-  const supabase = await createClient();
-
-  const { data } = await supabase
-    .from("admin_settings")
-    .select("payment_method_label, payment_address, is_active")
-    .eq("is_active", true)
-    .maybeSingle();
-
-  return data;
+  return getPaymentTarget("packages");
 }

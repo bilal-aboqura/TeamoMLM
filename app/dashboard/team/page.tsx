@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { ReferralStatsCards } from "./_components/ReferralStatsCards";
 import { InviteLinkCard } from "./_components/InviteLinkCard";
 import { MyDownlineTree } from "./_components/MyDownlineTree";
-import { buildTree } from "./_components/treeUtils";
+import { buildTree, type TreeRow } from "./_components/treeUtils";
 
 export const metadata = {
   title: "فريقي",
@@ -32,7 +32,7 @@ export default async function TeamPage() {
     supabase.rpc("get_my_referral_tree"),
   ]);
 
-  const stats = statsResult.data ?? {
+  const snapshotStats = statsResult.data ?? {
     direct_count: 0,
     total_team_size: 0,
     total_earnings: 0,
@@ -49,7 +49,13 @@ export default async function TeamPage() {
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://teamoads.com").replace(/\/$/, "");
   const baseUrl = `${appUrl}/register`;
 
-  const treeData = buildTree(treeResult.data ?? [], user.id);
+  const treeRows = (treeResult.data ?? []) as TreeRow[];
+  const treeData = buildTree(treeRows, user.id);
+  const stats = {
+    direct_count: treeRows.filter((row) => row.depth === 1).length,
+    total_team_size: treeRows.length,
+    total_earnings: Number(snapshotStats.total_earnings ?? 0),
+  };
 
   return (
     <div className="max-w-md mx-auto p-6 space-y-6">

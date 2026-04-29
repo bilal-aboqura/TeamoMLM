@@ -17,6 +17,11 @@ import {
   toggleUserStatusSchema,
   adjustUserBalanceSchema,
 } from "@/lib/validations/admin-schemas";
+import type { PaymentTargetScope } from "@/lib/db/payment-targets";
+import {
+  isMissingSchema,
+  writeFinancialControlsFallback,
+} from "@/lib/db/financial-controls-fallback";
 
 type AdminActionResult = { success: true } | { error: string };
 
@@ -255,6 +260,22 @@ export async function adjustUserBalance(
     console.error("FAIL to audit manual balance adjust:", auditError);
   }
 
+  const oldBalance = Number(user.wallet_balance);
+  const { error: adjustmentError } = await adminClient
+    .from("user_balance_adjustments")
+    .insert({
+      user_id: parsed.data.userId,
+      old_balance: oldBalance,
+      new_balance: parsed.data.newBalance,
+      delta: parsed.data.newBalance - oldBalance,
+      reason: parsed.data.reason,
+      created_by: adminId,
+    });
+
+  if (adjustmentError) {
+    console.error("FAIL to store user balance adjustment:", adjustmentError);
+  }
+
   return { success: true };
 }
 
@@ -414,6 +435,58 @@ export async function updatePaymentSettings(
     return { error: "حدث خطأ أثناء تحديث معلومات الدفع" };
   }
 
+  return { success: true };
+}
+
+export async function updatePaymentTarget(
+  scope: PaymentTargetScope,
+  data: { label: string; address: string }
+): Promise<AdminActionResult> {
+  const adminId = await verifyAdmin();
+  if (!adminId) return { error: "غير مصرح لك بهذا الإجراء" };
+
+  if (!["packages", "profit_shares", "investment", "pay_later"].includes(scope)) {
+    return { error: "نطاق الدفع غير صالح" };
+  }
+
+  const label = data.label.trim();
+  const address = data.address.trim();
+  if (!label || !address) return { error: "طريقة الدفع ورقم المحفظة مطلوبان" };
+
+  const adminClient = createAdminClient();
+  const { error } = await adminClient
+    .from("platform_payment_targets")
+    .upsert({ scope, label, address }, { onConflict: "scope" });
+
+  if (error && isMissingSchema(error.message)) {
+    const fallbackResult = await writeFinancialControlsFallback((current) => ({
+      ...current,
+      paymentTargets: {
+        ...(current.paymentTargets ?? {}),
+        [scope]: {
+          scope,
+          label,
+          address,
+          updated_at: new Date().toISOString(),
+        },
+      },
+    }));
+
+    if (fallbackResult.error) {
+      return {
+        error:
+          "تعذر تحديث معلومات الدفع: تأكد من وجود مساحة التخزين proofs أو طبّق migration الإعدادات المالية",
+      };
+    }
+  } else if (error) {
+    return { error: `تعذر تحديث معلومات الدفع: ${error.message}` };
+  }
+
+  revalidatePath("/admin/settings");
+  revalidatePath("/dashboard/packages");
+  revalidatePath("/dashboard/profit-shares");
+  revalidatePath("/dashboard/investment");
+  revalidatePath("/dashboard/pay-later");
   return { success: true };
 }
 

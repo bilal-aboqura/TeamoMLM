@@ -9,6 +9,7 @@ import {
   type PurchaseRequestActionResult,
 } from "../actions";
 import type { EquityPackage } from "@/lib/validations/equity-schemas";
+import type { PaymentTarget } from "@/lib/db/payment-targets";
 
 const initialState: PurchaseRequestActionResult = {
   success: false,
@@ -24,18 +25,20 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
       disabled={pending || disabled}
       className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white transition-all hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {pending ? "جارٍ الإرسال..." : "إرسال الطلب"}
+      {pending ? "جارٍ الإرسال..." : "إرسال طلب الشراء"}
     </button>
   );
 }
 
 export function PurchaseModal({
   selectedPackage,
-  walletAddress,
+  paymentTarget,
+  defaultPhone,
   onClose,
 }: {
   selectedPackage: EquityPackage | null;
-  walletAddress: string | null;
+  paymentTarget: PaymentTarget | null;
+  defaultPhone: string;
   onClose: () => void;
 }) {
   const [state, formAction] = useActionState(
@@ -77,7 +80,7 @@ export function PurchaseModal({
         <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
           <div>
             <h3 className="text-lg font-black text-slate-900">
-              تأكيد شراء حصة
+              تأكيد شراء حصة أرباح
             </h3>
             <p className="mt-1 text-sm text-slate-500" dir="ltr">
               {selectedPackage.label}
@@ -96,18 +99,18 @@ export function PurchaseModal({
         <div className="space-y-5 px-6 py-5">
           <div className="rounded-2xl bg-slate-950 p-4 text-white">
             <p className="text-xs font-medium text-slate-300">
-              عنوان الدفع USDT
+              {paymentTarget?.label ?? "عنوان الدفع"}
             </p>
             <div className="mt-2 flex items-center gap-2">
               <code className="min-w-0 flex-1 break-all text-sm" dir="ltr">
-                {walletAddress ?? "Payment address is not configured"}
+                {paymentTarget?.address ?? "لم يتم ضبط رقم المحفظة بعد"}
               </code>
               <button
                 type="button"
-                disabled={!walletAddress}
+                disabled={!paymentTarget?.address}
                 onClick={async () => {
-                  if (!walletAddress) return;
-                  await navigator.clipboard.writeText(walletAddress);
+                  if (!paymentTarget?.address) return;
+                  await navigator.clipboard.writeText(paymentTarget.address);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 1600);
                 }}
@@ -138,16 +141,34 @@ export function PurchaseModal({
 
             <div>
               <label
-                htmlFor="sponsorReferralCode"
+                htmlFor="buyerPhone"
                 className="block text-sm font-bold text-slate-700"
               >
-                كود الإحالة
+                رقم الهاتف
               </label>
               <input
-                id="sponsorReferralCode"
-                name="sponsorReferralCode"
+                id="buyerPhone"
+                name="buyerPhone"
+                defaultValue={defaultPhone}
                 className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                placeholder="مثال: ADM1N000"
+                placeholder="رقم الهاتف"
+                dir="ltr"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="buyerEmail"
+                className="block text-sm font-bold text-slate-700"
+              >
+                البريد الإلكتروني
+              </label>
+              <input
+                id="buyerEmail"
+                name="buyerEmail"
+                type="email"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                placeholder="name@example.com"
                 dir="ltr"
               />
             </div>
@@ -187,13 +208,13 @@ export function PurchaseModal({
               </p>
             </label>
 
-            {(fileError || actionError) ? (
+            {fileError || actionError ? (
               <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
                 {fileError ?? actionError}
               </p>
             ) : null}
 
-            <SubmitButton disabled={!walletAddress || !receiptName} />
+            <SubmitButton disabled={!paymentTarget?.address || !receiptName} />
           </form>
         </div>
       </div>

@@ -18,7 +18,7 @@ export function InvestmentOverviewCards({
     },
     {
       label: "إجمالي الأرباح",
-      value: money(summary.grossProfit),
+      value: money(summary.grossProfit + summary.manualProfit),
       className: "bg-white text-slate-900",
       valueClass: "text-emerald-600",
     },

@@ -119,3 +119,38 @@ export async function deleteAppProfitOffer(offerId: string): Promise<ActionResul
   revalidatePath("/dashboard/app-profits");
   return { success: true };
 }
+
+export async function updateAppProfitPackageLimits(
+  formData: FormData
+): Promise<ActionResult> {
+  if (!(await verifyAdmin())) return { error: "غير مصرح لك بهذا الإجراء" };
+
+  const entries = Array.from(formData.entries())
+    .filter(([key]) => key.startsWith("limit:"))
+    .map(([key, value]) => ({
+      package_key: key.replace("limit:", ""),
+      app_limit: Number(value),
+    }));
+
+  if (
+    entries.some(
+      (entry) =>
+        !entry.package_key ||
+        !Number.isInteger(entry.app_limit) ||
+        entry.app_limit < 0
+    )
+  ) {
+    return { error: "حدود التطبيقات يجب أن تكون أرقامًا صحيحة موجبة أو صفر" };
+  }
+
+  const adminClient = createAdminClient();
+  const { error } = await adminClient
+    .from("app_profit_package_limits")
+    .upsert(entries, { onConflict: "package_key" });
+
+  if (error) return { error: "تعذر تحديث حدود التطبيقات" };
+
+  revalidatePath("/admin/app-profits/manage");
+  revalidatePath("/dashboard/app-profits");
+  return { success: true };
+}

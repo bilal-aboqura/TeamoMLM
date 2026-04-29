@@ -107,13 +107,13 @@ export async function submitTaskProof(
 
   const { data: existingLog } = await supabaseAdmin
     .from("task_completion_logs")
-    .select("id")
+    .select("id, status, proof_url")
     .eq("user_id", user.id)
     .eq("task_id", task_id)
     .eq("completion_date", today)
     .maybeSingle();
 
-  if (existingLog) {
+  if (existingLog && existingLog.status !== "rejected") {
     return {
       error: {
         field: "general",
@@ -126,7 +126,8 @@ export async function submitTaskProof(
     .from("task_completion_logs")
     .select("*", { count: "exact", head: true })
     .eq("user_id", user.id)
-    .eq("completion_date", today);
+    .eq("completion_date", today)
+    .in("status", ["pending", "approved"]);
 
   if (!countError && (todayCount ?? 0) >= pkg.daily_task_count) {
     return {
@@ -176,16 +177,29 @@ export async function submitTaskProof(
     };
   }
 
-  const { error: insertError } = await supabaseAdmin
-    .from("task_completion_logs")
-    .insert({
-      user_id: user.id,
-      task_id: task_id,
-      proof_url: storagePath,
-      reward_amount_snapshot: rewardSnapshot,
-      completion_date: today,
-      status: "pending",
-    });
+  const mutation = existingLog
+    ? supabaseAdmin
+        .from("task_completion_logs")
+        .update({
+          proof_url: storagePath,
+          reward_amount_snapshot: rewardSnapshot,
+          status: "pending",
+          rejection_reason: null,
+        })
+        .eq("id", existingLog.id)
+        .eq("status", "rejected")
+    : supabaseAdmin
+        .from("task_completion_logs")
+        .insert({
+          user_id: user.id,
+          task_id: task_id,
+          proof_url: storagePath,
+          reward_amount_snapshot: rewardSnapshot,
+          completion_date: today,
+          status: "pending",
+        });
+
+  const { error: insertError } = await mutation;
 
   if (insertError) {
     await supabaseAdmin.storage.from("proofs").remove([storagePath]);
@@ -202,6 +216,10 @@ export async function submitTaskProof(
     return {
       error: { field: "general", message: "حدث خطأ، يرجى المحاولة مرة أخرى" },
     };
+  }
+
+  if (existingLog?.proof_url) {
+    await supabaseAdmin.storage.from("proofs").remove([existingLog.proof_url]);
   }
 
   return { success: true };

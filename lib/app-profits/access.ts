@@ -10,6 +10,8 @@ export type AppProfitAccess = {
   leadershipLevel: number | null;
   currentPackageLevel: string | null;
   appPackageAmount: number | null;
+  packageKey: string | null;
+  appLimit: number;
 };
 
 export function evaluateAppProfitAccess({
@@ -28,6 +30,8 @@ export function evaluateAppProfitAccess({
       leadershipLevel,
       currentPackageLevel,
       appPackageAmount,
+      packageKey: currentPackageLevel,
+      appLimit: 999,
     };
   }
 
@@ -38,6 +42,8 @@ export function evaluateAppProfitAccess({
       leadershipLevel,
       currentPackageLevel,
       appPackageAmount,
+      packageKey: currentPackageLevel,
+      appLimit: 999,
     };
   }
 
@@ -48,6 +54,8 @@ export function evaluateAppProfitAccess({
       leadershipLevel,
       currentPackageLevel,
       appPackageAmount,
+      packageKey: String(appPackageAmount),
+      appLimit: 999,
     };
   }
 
@@ -57,6 +65,8 @@ export function evaluateAppProfitAccess({
     leadershipLevel,
     currentPackageLevel,
     appPackageAmount,
+    packageKey: null,
+    appLimit: 0,
   };
 }
 
@@ -75,11 +85,24 @@ export async function getAppProfitAccess(userId: string): Promise<AppProfitAcces
     .eq("user_id", userId)
     .maybeSingle();
 
-  return evaluateAppProfitAccess({
+  const access = evaluateAppProfitAccess({
     leadershipLevel: profile?.leadership_level ?? null,
     currentPackageLevel: profile?.current_package_level ?? null,
     appPackageAmount: wallet?.app_package_amount != null ? Number(wallet.app_package_amount) : null,
   });
+
+  if (!access.packageKey) return access;
+
+  const { data: limit } = await adminClient
+    .from("app_profit_package_limits")
+    .select("app_limit")
+    .eq("package_key", access.packageKey)
+    .maybeSingle();
+
+  return {
+    ...access,
+    appLimit: Number(limit?.app_limit ?? 999),
+  };
 }
 
 export async function ensureIsolatedWallet(userId: string) {

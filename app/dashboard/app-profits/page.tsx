@@ -119,6 +119,11 @@ export default async function AppProfitsPage() {
         </div>
 
         {access.allowed ? <AppOfferList offers={offers} /> : <AccessLockedState />}
+        {access.allowed ? (
+          <p className="rounded-2xl border border-slate-100 bg-white px-4 py-3 text-sm text-slate-500">
+            عدد التطبيقات المتاحة لك يعتمد على باقتك الحالية. الحد الحالي: {access.appLimit} تطبيق.
+          </p>
+        ) : null}
       </section>
 
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 text-white md:p-10">
@@ -208,7 +213,7 @@ export default async function AppProfitsPage() {
               مستعد لمضاعفة أرباحك؟
             </h2>
             <p className="mx-auto mb-6 max-w-md text-sm text-emerald-100">
-              قم بالترقية إلى باقة B2 أو أعلى للوصول إلى مهام التطبيقات المميزة وأرباح تصل إلى $41.66 يومياً
+              قم بالترقية إلى باقة B1 أو أعلى للوصول إلى مهام التطبيقات المميزة وأرباح تصل إلى $41.66 يومياً
             </p>
             <Link
               href="/dashboard/packages"

@@ -50,7 +50,7 @@ export async function getAppProfitDashboard(userId: string) {
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
-  const offerRows = offers ?? [];
+  const offerRows = (offers ?? []).slice(0, access.appLimit);
   const offerIds = offerRows.map((offer) => offer.id);
 
   const { data: submissions } =

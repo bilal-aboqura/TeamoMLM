@@ -1,6 +1,7 @@
 export type InvestmentAccountForSummary = {
   total_capital: number;
   withdrawn_profits: number;
+  manual_profit?: number;
   last_cycle_start: string | null;
   current_tier_percentage: number | null;
   status: "active" | "completed";
@@ -13,6 +14,7 @@ export type PendingWithdrawalForSummary = {
 export type InvestmentSummary = {
   totalCapital: number;
   grossProfit: number;
+  manualProfit: number;
   availableProfit: number;
   cyclesPassed: number;
   nextCycleAt: string | null;
@@ -42,6 +44,7 @@ export function computeInvestmentSummary(
     return {
       totalCapital: 0,
       grossProfit: 0,
+      manualProfit: 0,
       availableProfit: 0,
       cyclesPassed: 0,
       nextCycleAt: null,
@@ -59,13 +62,14 @@ export function computeInvestmentSummary(
     (account.total_capital * account.current_tier_percentage) / 100
   );
   const grossProfit = floorMoney(cyclesPassed * profitPerCycle);
+  const manualProfit = floorMoney(Number(account.manual_profit ?? 0));
   const pendingTotal = pendingWithdrawals.reduce(
     (total, withdrawal) => total + Number(withdrawal.amount ?? 0),
     0
   );
   const availableProfit = Math.max(
     0,
-    floorMoney(grossProfit - account.withdrawn_profits - pendingTotal)
+    floorMoney(grossProfit + manualProfit - account.withdrawn_profits - pendingTotal)
   );
   const nextCycleAt = new Date(
     cycleStart.getTime() + (cyclesPassed + 1) * CYCLE_MS
@@ -74,6 +78,7 @@ export function computeInvestmentSummary(
   return {
     totalCapital: Number(account.total_capital),
     grossProfit,
+    manualProfit,
     availableProfit,
     cyclesPassed,
     nextCycleAt,

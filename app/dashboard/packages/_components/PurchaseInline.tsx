@@ -142,22 +142,22 @@ export function PurchaseInline({
             {paymentSetting ? (
               <div className="bg-slate-900 text-white rounded-xl p-4 mb-4">
                 <p className="text-slate-300 text-sm mb-1">
-                  {paymentSetting.payment_method_label}
+                  {paymentSetting.label}
                 </p>
                 <div className="flex items-center gap-2">
                   <code className="text-sm font-mono flex-1 break-all">
-                    {paymentSetting.payment_address}
+                    {paymentSetting.address}
                   </code>
                   <button
                     onClick={async () => {
                       try {
                         if (navigator.clipboard?.writeText) {
                           await navigator.clipboard.writeText(
-                            paymentSetting.payment_address
+                            paymentSetting.address
                           );
                         } else {
                           const ta = document.createElement("textarea");
-                          ta.value = paymentSetting.payment_address;
+                          ta.value = paymentSetting.address;
                           ta.style.position = "fixed";
                           ta.style.opacity = "0";
                           document.body.appendChild(ta);

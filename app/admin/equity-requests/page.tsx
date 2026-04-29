@@ -1,11 +1,18 @@
 import { getAllProfitShareRequests } from "@/lib/db/admin-equity";
+import { getEquityProgress } from "@/lib/db/equity";
 import { AdminRequestsTable } from "./_components/AdminRequestsTable";
+import { EquitySettingsPanel } from "./_components/EquitySettingsPanel";
 
 export const dynamic = "force-dynamic";
 
 export default async function EquityRequestsPage() {
-  const requests = await getAllProfitShareRequests();
-  const pendingCount = requests.filter((request) => request.status === "pending").length;
+  const [requests, progress] = await Promise.all([
+    getAllProfitShareRequests(),
+    getEquityProgress(),
+  ]);
+  const pendingCount = requests.filter(
+    (request) => request.status === "pending"
+  ).length;
 
   return (
     <div className="space-y-8">
@@ -21,9 +28,15 @@ export default async function EquityRequestsPage() {
           ) : null}
         </div>
         <p className="mt-1 text-sm text-slate-500">
-          مراجعة إيصالات شراء الأسهم وقبول أو رفض الطلبات المعلقة.
+          مراجعة إيصالات شراء حصص الأرباح وقبول أو رفض الطلبات المعلقة.
         </p>
       </header>
+
+      <EquitySettingsPanel
+        manualSoldEquity={progress.manualSoldEquity}
+        acceptedSoldEquity={progress.acceptedSoldEquity}
+        remainingEquity={progress.remainingEquity}
+      />
 
       <AdminRequestsTable requests={requests} />
     </div>

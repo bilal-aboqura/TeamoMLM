@@ -1,5 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { InvestmentAdminTabs } from "./_components/InvestmentAdminTabs";
+import { InvestmentControlsPanel } from "./_components/InvestmentControlsPanel";
+import { getCurrentTradingReport } from "@/lib/db/investment";
 import type { AdminDepositRow } from "./_components/DepositRequestsTable";
 import type { AdminWithdrawalRow } from "./_components/WithdrawalRequestsTable";
 
@@ -10,7 +12,7 @@ type UserJoin = { full_name: string | null; phone_number: string | null } | null
 export default async function AdminInvestmentsPage() {
   const supabase = createAdminClient();
 
-  const [depositResult, withdrawalResult] = await Promise.all([
+  const [depositResult, withdrawalResult, report, investorsResult] = await Promise.all([
     supabase
       .from("investment_deposits")
       .select("id, amount, tier_percentage, status, receipt_url, rejection_reason, created_at, users!investment_deposits_user_id_fkey(full_name, phone_number)")
@@ -18,6 +20,12 @@ export default async function AdminInvestmentsPage() {
     supabase
       .from("investment_withdrawals")
       .select("id, amount, status, rejection_reason, created_at, users!investment_withdrawals_user_id_fkey(full_name, phone_number)")
+      .order("created_at", { ascending: false }),
+    getCurrentTradingReport(),
+    supabase
+      .from("investment_accounts")
+      .select("user_id, users!investment_accounts_user_id_fkey(id, full_name, phone_number)")
+      .eq("status", "active")
       .order("created_at", { ascending: false }),
   ]);
 
@@ -58,6 +66,19 @@ export default async function AdminInvestmentsPage() {
     };
   });
 
+  const investors = (investorsResult.data ?? []).map((row) => {
+    const user = row.users as unknown as {
+      id: string;
+      full_name: string;
+      phone_number: string;
+    } | null;
+    return {
+      id: user?.id ?? row.user_id,
+      full_name: user?.full_name ?? "غير متوفر",
+      phone_number: user?.phone_number ?? "غير متوفر",
+    };
+  });
+
   return (
     <div className="space-y-8">
       <header>
@@ -66,6 +87,7 @@ export default async function AdminInvestmentsPage() {
           مراجعة إيداعات رأس المال وطلبات سحب الأرباح.
         </p>
       </header>
+      <InvestmentControlsPanel report={report} investors={investors} />
       <InvestmentAdminTabs deposits={deposits} withdrawals={withdrawals} />
     </div>
   );

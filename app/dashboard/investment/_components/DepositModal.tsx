@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { INVESTMENT_TIERS, resolveTier } from "@/lib/investment/tiers";
 import { submitInvestmentDeposit } from "../actions";
 import type { InvestmentActionResult } from "@/lib/validations/investment-schemas";
+import type { PaymentTarget } from "@/lib/db/payment-targets";
 
 const initialState: InvestmentActionResult<{ depositId: string }> = {
   success: false,
@@ -29,11 +30,11 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
 export function DepositModal({
   open,
   onClose,
-  walletAddress,
+  paymentTarget,
 }: {
   open: boolean;
   onClose: () => void;
-  walletAddress: string | null;
+  paymentTarget: PaymentTarget | null;
 }) {
   const [state, formAction] = useActionState(submitInvestmentDeposit, initialState);
   const [amount, setAmount] = useState("");
@@ -93,14 +94,14 @@ export function DepositModal({
             <p className="text-xs text-slate-300">عنوان الدفع USDT</p>
             <div className="mt-2 flex items-center gap-2">
               <code className="min-w-0 flex-1 break-all text-sm" dir="ltr">
-                {walletAddress ?? "Payment address is not configured"}
+                {paymentTarget?.address ?? "لم يتم ضبط رقم المحفظة بعد"}
               </code>
               <button
                 type="button"
-                disabled={!walletAddress}
+                disabled={!paymentTarget?.address}
                 onClick={async () => {
-                  if (!walletAddress) return;
-                  await navigator.clipboard.writeText(walletAddress);
+                  if (!paymentTarget?.address) return;
+                  await navigator.clipboard.writeText(paymentTarget.address);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 1500);
                 }}
@@ -165,7 +166,7 @@ export function DepositModal({
               {clientError ?? actionError}
             </p>
           ) : null}
-          <SubmitButton disabled={!walletAddress || !receiptName} />
+          <SubmitButton disabled={!paymentTarget?.address || !receiptName} />
         </form>
       </div>
     </div>

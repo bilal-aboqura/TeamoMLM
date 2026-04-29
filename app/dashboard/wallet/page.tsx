@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { WalletStatsCards } from "./_components/WalletStatsCards";
 import { WithdrawalForm } from "./_components/WithdrawalForm";
 import { WithdrawalsTable } from "./_components/WithdrawalsTable";
+import { BalanceAdjustmentsList } from "./_components/BalanceAdjustmentsList";
 
 // Auth guard: app/dashboard/layout.tsx covers all /dashboard/** routes —
 // redirects unauthenticated users to /login and admin-role users to /admin.
@@ -20,7 +21,7 @@ export default async function WalletPage() {
 
   if (!user) redirect("/login");
 
-  const [userResult, summaryResult, requestsResult, payLaterResult] = await Promise.all([
+  const [userResult, summaryResult, requestsResult, payLaterResult, adjustmentsResult] = await Promise.all([
     supabase
       .from("users")
       .select("wallet_balance, status")
@@ -41,6 +42,12 @@ export default async function WalletPage() {
       .select("locked_profit, status")
       .eq("user_id", user.id)
       .in("status", ["active", "pending_review", "overdue"]),
+    supabase
+      .from("user_balance_adjustments")
+      .select("id, old_balance, new_balance, delta, reason, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(10),
   ]);
 
   const userRow = userResult.data;
@@ -80,6 +87,16 @@ export default async function WalletPage() {
       />
 
       <WithdrawalsTable requests={requestsResult.data ?? []} />
+      <BalanceAdjustmentsList
+        adjustments={(adjustmentsResult.data ?? []).map((item) => ({
+          id: item.id,
+          old_balance: Number(item.old_balance),
+          new_balance: Number(item.new_balance),
+          delta: Number(item.delta),
+          reason: item.reason,
+          created_at: item.created_at,
+        }))}
+      />
     </main>
   );
 }

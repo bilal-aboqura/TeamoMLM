@@ -1,15 +1,20 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { OfferForm } from "./_components/OfferForm";
 import { OffersTable, type AdminAppOffer } from "./_components/OffersTable";
+import { AppLimitsForm } from "./_components/AppLimitsForm";
+import { getAppProfitPackageLimits } from "@/lib/db/app-profit-limits";
 
 export const dynamic = "force-dynamic";
 
 export default async function ManageAppProfitsPage() {
   const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("app_profit_offers")
-    .select("id, title, provider, download_url, reward_usd, required_tier, is_active")
-    .order("created_at", { ascending: false });
+  const [{ data }, limits] = await Promise.all([
+    supabase
+      .from("app_profit_offers")
+      .select("id, title, provider, download_url, reward_usd, required_tier, is_active")
+      .order("created_at", { ascending: false }),
+    getAppProfitPackageLimits(),
+  ]);
 
   const offers: AdminAppOffer[] = (data ?? []).map((offer) => ({
     ...offer,
@@ -22,6 +27,7 @@ export default async function ManageAppProfitsPage() {
         <h1 className="text-2xl font-bold text-slate-900">إدارة عروض التطبيقات</h1>
         <p className="mt-1 text-sm text-slate-500">إضافة وتعديل عروض الربح بالتطبيقات المستقلة</p>
       </div>
+      <AppLimitsForm limits={limits} />
       <OfferForm />
       <OffersTable offers={offers} />
     </div>

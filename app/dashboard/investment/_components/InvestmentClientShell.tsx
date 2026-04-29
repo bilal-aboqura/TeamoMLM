@@ -6,6 +6,7 @@ import { EmptyInvestmentState } from "./EmptyInvestmentState";
 import { DepositModal } from "./DepositModal";
 import { WithdrawModal } from "./WithdrawModal";
 import type { InvestmentSummary } from "@/lib/investment/calc";
+import type { PaymentTarget } from "@/lib/db/payment-targets";
 
 type DepositState = {
   status: "pending" | "accepted" | "rejected";
@@ -14,12 +15,12 @@ type DepositState = {
 
 export function InvestmentClientShell({
   children,
-  walletAddress,
+  paymentTarget,
   summary,
   latestDeposit,
 }: {
   children: React.ReactNode;
-  walletAddress: string | null;
+  paymentTarget: PaymentTarget | null;
   summary: InvestmentSummary;
   latestDeposit: DepositState;
 }) {
@@ -79,7 +80,7 @@ export function InvestmentClientShell({
       <DepositModal
         open={depositOpen}
         onClose={() => setDepositOpen(false)}
-        walletAddress={walletAddress}
+        paymentTarget={paymentTarget}
       />
       <WithdrawModal
         open={withdrawOpen}

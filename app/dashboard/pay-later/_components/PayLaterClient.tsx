@@ -410,7 +410,19 @@ export function PayLaterClient({ data }: { data: PayLaterDashboardData }) {
               إثبات السداد قيد مراجعة الإدارة.
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-4">
+              <div className="rounded-xl bg-slate-950 p-4 text-white">
+                <p className="text-xs text-slate-300">
+                  {data.paymentTarget?.label ?? "رقم المحفظة"}
+                </p>
+                <p className="mt-2 break-all text-sm font-mono" dir="ltr">
+                  {data.paymentTarget?.address ?? "لم يتم ضبط رقم المحفظة بعد"}
+                </p>
+                <p className="mt-2 text-xs text-slate-300">
+                  بعد رفع إثبات السداد سيظهر الطلب في لوحة الإدارة داخل صفحة الدفع لاحقًا.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <button
                 onClick={handleWalletRepay}
                 disabled={isPending || data.walletBalance < remainingDue}
@@ -436,6 +448,7 @@ export function PayLaterClient({ data }: { data: PayLaterDashboardData }) {
                   رفع إثبات سداد
                 </button>
               </form>
+              </div>
             </div>
           )}
         </div>

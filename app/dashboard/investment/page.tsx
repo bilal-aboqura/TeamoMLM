@@ -1,8 +1,12 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getUsdtWalletAddress } from "@/lib/db/settings";
+import { getPaymentTarget } from "@/lib/db/payment-targets";
 import { computeInvestmentSummary } from "@/lib/investment/calc";
-import { getTradingReport } from "@/lib/investment/trading-report";
+import { buildTradingReport } from "@/lib/investment/trading-report";
+import {
+  getCurrentTradingReport,
+  getManualInvestmentProfitTotal,
+} from "@/lib/db/investment";
 import { InvestmentClientShell } from "./_components/InvestmentClientShell";
 import { InvestmentOverviewCards } from "./_components/InvestmentOverviewCards";
 import { CycleCountdownTimer } from "./_components/CycleCountdownTimer";
@@ -19,7 +23,14 @@ export default async function InvestmentPage() {
 
   if (!user) redirect("/login");
 
-  const [accountResult, depositsResult, withdrawalsResult, walletAddress] =
+  const [
+    accountResult,
+    depositsResult,
+    withdrawalsResult,
+    paymentTarget,
+    tradingReport,
+    manualProfit,
+  ] =
     await Promise.all([
       supabase
         .from("investment_accounts")
@@ -39,13 +50,16 @@ export default async function InvestmentPage() {
         .select("amount")
         .eq("user_id", user.id)
         .eq("status", "pending"),
-      getUsdtWalletAddress(),
+      getPaymentTarget("investment"),
+      getCurrentTradingReport(),
+      getManualInvestmentProfitTotal(user.id),
     ]);
 
   const account = accountResult.data
     ? {
         total_capital: Number(accountResult.data.total_capital),
         withdrawn_profits: Number(accountResult.data.withdrawn_profits),
+        manual_profit: manualProfit,
         last_cycle_start: accountResult.data.last_cycle_start,
         current_tier_percentage: accountResult.data.current_tier_percentage
           ? Number(accountResult.data.current_tier_percentage)
@@ -63,7 +77,10 @@ export default async function InvestmentPage() {
     rejection_reason: string | null;
   } | null;
   const report = summary.tierPercentage
-    ? getTradingReport(summary.tierPercentage)
+    ? buildTradingReport({
+        tierPercentage: summary.tierPercentage,
+        ...tradingReport,
+      })
     : null;
 
   return (
@@ -80,8 +97,28 @@ export default async function InvestmentPage() {
           </p>
         </header>
 
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 text-sm leading-7 text-slate-600 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+          <h2 className="mb-3 text-xl font-black text-slate-900">
+            ابدأ استثمارك بطريقة ذكية ومربحة
+          </h2>
+          <p>
+            أنت تضع رأس المال، ونحن نديره داخل صفقات تداول حقيقية. تستمر كل دورة 7 أيام، ويتم احتساب الأرباح الأسبوعية حسب شريحة استثمارك وإضافتها إلى أرباحك القابلة للسحب.
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="rounded-xl bg-slate-50 px-4 py-3">
+              أرباح أسبوعية واضحة حسب مبلغ الاستثمار.
+            </div>
+            <div className="rounded-xl bg-slate-50 px-4 py-3">
+              تقرير تداول مختصر يعرض الصفقات الرابحة والخاسرة.
+            </div>
+            <div className="rounded-xl bg-slate-50 px-4 py-3">
+              يمكنك سحب الأرباح بعد كل دورة ورأس المال يبقى للاستثمار المستمر.
+            </div>
+          </div>
+        </section>
+
         <InvestmentClientShell
-          walletAddress={walletAddress}
+          paymentTarget={paymentTarget}
           summary={summary}
           latestDeposit={latestDeposit}
         >

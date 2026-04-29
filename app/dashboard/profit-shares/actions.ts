@@ -8,17 +8,30 @@ import {
   EquityPurchaseFormSchema,
 } from "@/lib/validations/equity-schemas";
 import {
-  GLOBAL_EQUITY_CAP,
-  USER_EQUITY_CAP,
-  getTotalSoldEquity,
+  getEquityProgress,
 } from "@/lib/db/equity";
-import { isValidSponsorReferralCode } from "@/lib/db/users";
 import { uploadEquityReceipt } from "@/lib/storage/upload";
 
 export type PurchaseRequestActionResult =
   | { success: false; idle: true }
   | { success: true }
   | { error: { field: string; message: string } };
+
+function isMissingSchema(errorMessage: string) {
+  return (
+    errorMessage.includes("schema cache") ||
+    errorMessage.includes("does not exist") ||
+    errorMessage.includes("Could not find the")
+  );
+}
+
+function canUseLegacyProfitShareInsert(error: { code?: string; message: string }) {
+  return (
+    isMissingSchema(error.message) ||
+    error.code === "23502" ||
+    error.message.includes("sponsor_referral_code")
+  );
+}
 
 export async function submitPurchaseRequest(
   _prevState: PurchaseRequestActionResult,
@@ -27,7 +40,8 @@ export async function submitPurchaseRequest(
   const parsed = EquityPurchaseFormSchema.safeParse({
     percentage: formData.get("percentage"),
     priceUsd: formData.get("priceUsd"),
-    sponsorReferralCode: formData.get("sponsorReferralCode"),
+    buyerEmail: formData.get("buyerEmail"),
+    buyerPhone: formData.get("buyerPhone"),
     receipt: formData.get("receipt"),
   });
 
@@ -64,49 +78,9 @@ export async function submitPurchaseRequest(
     };
   }
 
-  const sponsorIsValid = await isValidSponsorReferralCode(
-    parsed.data.sponsorReferralCode,
-    user.id
-  );
-
-  if (!sponsorIsValid) {
-    return {
-      error: {
-        field: "sponsorReferralCode",
-        message: "Referral code is invalid or belongs to your account",
-      },
-    };
-  }
-
   const adminClient = createAdminClient();
-  const { data: existingRequests, error: existingError } = await adminClient
-    .from("profit_share_requests")
-    .select("percentage, status")
-    .eq("user_id", user.id)
-    .in("status", ["pending", "accepted"]);
-
-  if (existingError) {
-    return {
-      error: { field: "general", message: "Could not verify your equity cap" },
-    };
-  }
-
-  const userRequestedEquity = (existingRequests ?? []).reduce(
-    (total, row) => total + Number(row.percentage ?? 0),
-    0
-  );
-
-  if (userRequestedEquity + selectedPackage.percentage > USER_EQUITY_CAP) {
-    return {
-      error: {
-        field: "general",
-        message: "This package exceeds your 10% equity limit",
-      },
-    };
-  }
-
-  const totalSoldEquity = await getTotalSoldEquity();
-  if (totalSoldEquity + selectedPackage.percentage > GLOBAL_EQUITY_CAP) {
+  const progress = await getEquityProgress();
+  if (progress.soldEquity + selectedPackage.percentage > progress.cap) {
     return {
       error: {
         field: "general",
@@ -122,16 +96,31 @@ export async function submitPurchaseRequest(
     };
   }
 
-  const { error: insertError } = await adminClient
+  let { error: insertError } = await adminClient
     .from("profit_share_requests")
     .insert({
       user_id: user.id,
-      sponsor_referral_code: parsed.data.sponsorReferralCode,
+      sponsor_referral_code: null,
+      buyer_email: parsed.data.buyerEmail,
+      buyer_phone: parsed.data.buyerPhone,
       percentage: selectedPackage.percentage,
       price_usd: selectedPackage.priceUsd,
       receipt_url: uploadResult.path,
       status: "pending",
     });
+
+  if (insertError && canUseLegacyProfitShareInsert(insertError)) {
+    const fallbackResult = await adminClient.from("profit_share_requests").insert({
+      user_id: user.id,
+      sponsor_referral_code: "DIRECT",
+      percentage: selectedPackage.percentage,
+      price_usd: selectedPackage.priceUsd,
+      receipt_url: uploadResult.path,
+      status: "pending",
+    });
+
+    insertError = fallbackResult.error;
+  }
 
   if (insertError) {
     await adminClient.storage.from("equity-receipts").remove([uploadResult.path]);

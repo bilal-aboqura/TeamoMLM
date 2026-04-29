@@ -76,7 +76,8 @@ export async function getTodaySubmissionCount(
     .from("task_completion_logs")
     .select("*", { count: "exact", head: true })
     .eq("user_id", userId)
-    .eq("completion_date", today);
+    .eq("completion_date", today)
+    .in("status", ["pending", "approved"]);
 
   if (error) return 0;
   return count ?? 0;
