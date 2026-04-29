@@ -104,6 +104,16 @@ export default async function InvestmentPage() {
           <p>
             أنت تضع رأس المال، ونحن نديره داخل صفقات تداول حقيقية. تستمر كل دورة 7 أيام، ويتم احتساب الأرباح الأسبوعية حسب شريحة استثمارك وإضافتها إلى أرباحك القابلة للسحب.
           </p>
+          <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-emerald-900">
+            <h3 className="mb-1 text-base font-black">
+              استثمار بدون خسارة للمشترك
+            </h3>
+            <p>
+              نحن نتحمل أي خسائر تحدث داخل صفقات التداول بالكامل، والمشترك لا
+              يخسر شيئًا من رأس ماله. رأس المال محفوظ، والأرباح فقط هي التي
+              تتغير حسب أداء السوق.
+            </p>
+          </div>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             <div className="rounded-xl bg-slate-50 px-4 py-3">
               أرباح أسبوعية واضحة حسب مبلغ الاستثمار.

@@ -9,6 +9,10 @@ import {
   updateAppProfitOfferSchema,
 } from "@/lib/validations/app-profit-schemas";
 import type { ActionResult } from "@/lib/app-profits/types";
+import {
+  isMissingSchema,
+  writeFinancialControlsFallback,
+} from "@/lib/db/financial-controls-fallback";
 
 async function verifyAdmin() {
   const supabase = await createClient();
@@ -148,7 +152,26 @@ export async function updateAppProfitPackageLimits(
     .from("app_profit_package_limits")
     .upsert(entries, { onConflict: "package_key" });
 
-  if (error) return { error: "تعذر تحديث حدود التطبيقات" };
+  if (error && isMissingSchema(error.message)) {
+    const fallbackResult = await writeFinancialControlsFallback((current) => ({
+      ...current,
+      appProfitPackageLimits: {
+        ...(current.appProfitPackageLimits ?? {}),
+        ...Object.fromEntries(
+          entries.map((entry) => [entry.package_key, entry.app_limit])
+        ),
+      },
+    }));
+
+    if (fallbackResult.error) {
+      return {
+        error:
+          "تعذر تحديث حدود التطبيقات: تأكد من وجود مساحة التخزين proofs أو طبّق migration الإعدادات المالية",
+      };
+    }
+  } else if (error) {
+    return { error: `تعذر تحديث حدود التطبيقات: ${error.message}` };
+  }
 
   revalidatePath("/admin/app-profits/manage");
   revalidatePath("/dashboard/app-profits");

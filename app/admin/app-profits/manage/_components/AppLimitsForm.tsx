@@ -3,9 +3,11 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateAppProfitPackageLimits } from "../actions";
+import {
+  APP_PROFIT_LIMIT_KEYS,
+  getDefaultAppProfitLimit,
+} from "@/lib/app-profits/limits";
 import type { AppProfitPackageLimit } from "@/lib/db/app-profit-limits";
-
-const keys = ["A1", "A2", "A3", "B1", "B2", "B3", "200", "300", "400", "500", "600"];
 
 export function AppLimitsForm({ limits }: { limits: AppProfitPackageLimit[] }) {
   const map = new Map(limits.map((limit) => [limit.package_key, limit.app_limit]));
@@ -38,14 +40,14 @@ export function AppLimitsForm({ limits }: { limits: AppProfitPackageLimit[] }) {
         يتم عرض هذا العدد فقط من التطبيقات النشطة للمستخدم حسب باقته.
       </p>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {keys.map((key) => (
+        {APP_PROFIT_LIMIT_KEYS.map((key) => (
           <label key={key} className="text-sm">
             <span className="mb-1 block font-bold text-slate-700">{key}</span>
             <input
               name={`limit:${key}`}
               type="number"
               min="0"
-              defaultValue={map.get(key) ?? 999}
+              defaultValue={map.get(key) ?? getDefaultAppProfitLimit(key)}
               className="w-full rounded-xl border border-slate-200 px-3 py-2"
             />
           </label>

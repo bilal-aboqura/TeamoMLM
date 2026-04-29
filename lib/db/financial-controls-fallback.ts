@@ -22,6 +22,7 @@ export type FinancialControlsFallback = {
       }>;
     }
   >;
+  appProfitPackageLimits?: Record<string, number>;
 };
 
 export function isMissingSchema(errorMessage: string) {

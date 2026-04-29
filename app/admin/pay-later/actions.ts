@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 
 type AdminResult = { success: true; message?: string } | { error: string };
 
+const PACKAGE_ORDER = ["A1", "A2", "A3", "B1", "B2", "B3"];
+
 async function verifyAdmin(): Promise<string | null> {
   const supabase = await createClient();
   const {
@@ -143,6 +145,22 @@ export async function cancelPayLaterForUser(userId: string): Promise<AdminResult
     await admin.storage.from("proofs").remove([debt.repayment_receipt_path]);
   }
 
+  let packageToRestore = debt?.from_package_name ?? null;
+  if (!packageToRestore) {
+    const { data: user } = await admin
+      .from("users")
+      .select("current_package_level")
+      .eq("id", userId)
+      .maybeSingle();
+    const currentIndex = user?.current_package_level
+      ? PACKAGE_ORDER.indexOf(user.current_package_level)
+      : -1;
+
+    if (currentIndex > 0) {
+      packageToRestore = PACKAGE_ORDER[currentIndex - 1];
+    }
+  }
+
   const userUpdate: {
     pay_later_manual_eligible: boolean;
     pay_later_fee_pct: number;
@@ -154,8 +172,8 @@ export async function cancelPayLaterForUser(userId: string): Promise<AdminResult
     pay_later_penalty_amount: 0,
   };
 
-  if (debt?.from_package_name) {
-    userUpdate.current_package_level = debt.from_package_name;
+  if (packageToRestore) {
+    userUpdate.current_package_level = packageToRestore;
   }
 
   const { error: userError } = await admin
@@ -196,6 +214,6 @@ export async function cancelPayLaterForUser(userId: string): Promise<AdminResult
     success: true,
     message: debt
       ? "تم إلغاء الدفع بالأجل وإرجاع المستخدم كأنه لم يختره"
-      : "تم تعطيل أهلية الدفع بالأجل لهذا المستخدم",
+      : "تم تعطيل الدفع بالأجل وإرجاع الباقة السابقة إن وجدت",
   };
 }

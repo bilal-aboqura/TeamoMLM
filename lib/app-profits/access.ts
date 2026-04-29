@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { getAppProfitPackageLimit } from "@/lib/db/app-profit-limits";
 
 const QUALIFYING_PACKAGES = new Set(["B1", "B2", "B3"]);
 const APP_PACKAGE_AMOUNTS = new Set([200, 300, 400, 500, 600]);
@@ -23,18 +24,6 @@ export function evaluateAppProfitAccess({
   currentPackageLevel: string | null;
   appPackageAmount: number | null;
 }): AppProfitAccess {
-  if ((leadershipLevel ?? 0) >= 1) {
-    return {
-      allowed: true,
-      reason: "rank",
-      leadershipLevel,
-      currentPackageLevel,
-      appPackageAmount,
-      packageKey: currentPackageLevel,
-      appLimit: 999,
-    };
-  }
-
   if (currentPackageLevel && QUALIFYING_PACKAGES.has(currentPackageLevel)) {
     return {
       allowed: true,
@@ -43,7 +32,7 @@ export function evaluateAppProfitAccess({
       currentPackageLevel,
       appPackageAmount,
       packageKey: currentPackageLevel,
-      appLimit: 999,
+      appLimit: 0,
     };
   }
 
@@ -55,7 +44,7 @@ export function evaluateAppProfitAccess({
       currentPackageLevel,
       appPackageAmount,
       packageKey: String(appPackageAmount),
-      appLimit: 999,
+      appLimit: 0,
     };
   }
 
@@ -93,15 +82,9 @@ export async function getAppProfitAccess(userId: string): Promise<AppProfitAcces
 
   if (!access.packageKey) return access;
 
-  const { data: limit } = await adminClient
-    .from("app_profit_package_limits")
-    .select("app_limit")
-    .eq("package_key", access.packageKey)
-    .maybeSingle();
-
   return {
     ...access,
-    appLimit: Number(limit?.app_limit ?? 999),
+    appLimit: await getAppProfitPackageLimit(access.packageKey),
   };
 }
 
