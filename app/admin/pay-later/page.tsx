@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 type DebtRow = {
   id: string;
+  user_id: string;
   full_name: string;
   phone_number: string;
   from_package_name: string;
@@ -42,7 +43,7 @@ export default async function AdminPayLaterPage() {
     supabase
       .from("pay_later_debts")
       .select(
-        "id, from_package_name, to_package_name, upgrade_amount, repayment_fee_amount, penalty_amount, locked_profit, amount_paid, status, due_at, upgraded_at, repayment_submitted_at, repayment_receipt_path, users!pay_later_debts_user_id_fkey(full_name, phone_number)"
+        "id, user_id, from_package_name, to_package_name, upgrade_amount, repayment_fee_amount, penalty_amount, locked_profit, amount_paid, status, due_at, upgraded_at, repayment_submitted_at, repayment_receipt_path, users!pay_later_debts_user_id_fkey(full_name, phone_number)"
       )
       .in("status", ["active", "pending_review", "overdue"])
       .order("due_at", { ascending: true }),
@@ -71,6 +72,7 @@ export default async function AdminPayLaterPage() {
 
       return {
         id: row.id,
+        user_id: row.user_id,
         full_name: user?.full_name ?? "غير متوفر",
         phone_number: user?.phone_number ?? "غير متوفر",
         from_package_name: row.from_package_name,

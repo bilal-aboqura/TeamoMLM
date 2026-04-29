@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import {
   approvePayLaterReceipt,
+  cancelPayLaterForUser,
   processOverduePayLater,
   rejectPayLaterReceipt,
   updatePayLaterUserSettings,
@@ -19,6 +20,7 @@ import {
 
 type DebtRow = {
   id: string;
+  user_id: string;
   full_name: string;
   phone_number: string;
   from_package_name: string;
@@ -119,6 +121,18 @@ function UserSettingsForm({ user }: { user: UserSettingsRow }) {
     });
   };
 
+  const cancelPayLater = () => {
+    const ok = window.confirm(
+      `هل تريد إلغاء الدفع بالأجل للمستخدم ${user.full_name}؟ سيتم حذف الدين المفتوح، إرجاع الباقة السابقة إن وجدت، وتعطيل الأهلية اليدوية.`
+    );
+    if (!ok) return;
+
+    startTransition(async () => {
+      await cancelPayLaterForUser(user.id);
+      router.refresh();
+    });
+  };
+
   return (
     <tr className="border-b border-slate-100 last:border-b-0">
       <td className="px-4 py-4">
@@ -168,6 +182,7 @@ function UserSettingsForm({ user }: { user: UserSettingsRow }) {
         />
       </td>
       <td className="px-4 py-4">
+        <div className="flex items-center gap-2">
         <button
           onClick={save}
           disabled={isPending}
@@ -176,6 +191,15 @@ function UserSettingsForm({ user }: { user: UserSettingsRow }) {
           <Save className="h-3.5 w-3.5" />
           حفظ
         </button>
+        <button
+          onClick={cancelPayLater}
+          disabled={isPending}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50"
+        >
+          <XCircle className="h-3.5 w-3.5" />
+          إلغاء بالأجل
+        </button>
+        </div>
       </td>
     </tr>
   );
@@ -331,6 +355,18 @@ export function PayLaterAdminPanel({
                             رفض
                           </button>
                         ) : null}
+                        <button
+                          onClick={() => {
+                            const ok = window.confirm(
+                              `هل تريد إلغاء الدفع بالأجل للمستخدم ${debt.full_name}؟ سيتم حذف الدين المفتوح وإرجاع الباقة السابقة.`
+                            );
+                            if (ok) run(() => cancelPayLaterForUser(debt.user_id));
+                          }}
+                          disabled={isPending}
+                          className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-200 disabled:opacity-50"
+                        >
+                          إلغاء بالأجل
+                        </button>
                       </div>
                     </td>
                   </tr>
