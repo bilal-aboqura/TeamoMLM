@@ -220,7 +220,56 @@ export async function sendManualInvestmentProfit(formData: FormData) {
     .select("id")
     .single();
 
-  if (error) return { error: "تعذر إرسال الربح اليدوي" };
+  if (error && isMissingSchema(error.message)) {
+    const entryId = crypto.randomUUID();
+    const fallbackResult = await writeFinancialControlsFallback((current) => {
+      const existing = current.manualInvestmentProfits?.[userId] ?? {
+        total: 0,
+        entries: [],
+      };
+
+      return {
+        ...current,
+        manualInvestmentProfits: {
+          ...(current.manualInvestmentProfits ?? {}),
+          [userId]: {
+            total: Number(existing.total ?? 0) + amount,
+            entries: [
+              ...existing.entries,
+              {
+                id: entryId,
+                amount,
+                reason,
+                createdBy: adminId,
+                createdAt: new Date().toISOString(),
+              },
+            ],
+          },
+        },
+      };
+    });
+
+    if (fallbackResult.error) {
+      return {
+        error:
+          "تعذر إرسال الربح اليدوي: تأكد من وجود مساحة التخزين proofs أو طبّق migration الإعدادات المالية",
+      };
+    }
+
+    await adminClient.from("financial_audit_log").insert({
+      record_id: entryId,
+      record_type: "manual_adjustment",
+      old_status: "investment_manual_profit",
+      new_status: `credited:${amount}`,
+      changed_by: adminId,
+    });
+
+    revalidatePath("/admin/investments");
+    revalidatePath("/dashboard/investment");
+    return { success: true as const };
+  }
+
+  if (error) return { error: `تعذر إرسال الربح اليدوي: ${error.message}` };
 
   await adminClient.from("financial_audit_log").insert({
     record_id: inserted.id,

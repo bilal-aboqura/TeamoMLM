@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { getManualInvestmentProfitTotal } from "@/lib/db/investment";
+import { computeInvestmentSummary } from "@/lib/investment/calc";
 import { resolveTier } from "@/lib/investment/tiers";
 import {
   submitDepositSchema,
@@ -134,6 +136,61 @@ export async function submitInvestmentWithdrawal(
   );
 
   if (error) {
+    if (error.message.includes("insufficient_profit")) {
+      const adminClient = createAdminClient();
+      const [accountResult, withdrawalsResult, manualProfit] = await Promise.all([
+        adminClient
+          .from("investment_accounts")
+          .select(
+            "total_capital, withdrawn_profits, last_cycle_start, current_tier_percentage, status"
+          )
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        adminClient
+          .from("investment_withdrawals")
+          .select("amount")
+          .eq("user_id", user.id)
+          .eq("status", "pending"),
+        getManualInvestmentProfitTotal(user.id),
+      ]);
+
+      const summary = computeInvestmentSummary(
+        accountResult.data
+          ? {
+              total_capital: Number(accountResult.data.total_capital),
+              withdrawn_profits: Number(accountResult.data.withdrawn_profits),
+              manual_profit: manualProfit,
+              last_cycle_start: accountResult.data.last_cycle_start,
+              current_tier_percentage:
+                accountResult.data.current_tier_percentage === null
+                  ? null
+                  : Number(accountResult.data.current_tier_percentage),
+              status: accountResult.data.status as "active" | "completed",
+            }
+          : null,
+        (withdrawalsResult.data ?? []).map((row) => ({
+          amount: Number(row.amount),
+        }))
+      );
+
+      if (parsed.data.amount <= summary.availableProfit) {
+        const { data: inserted, error: fallbackError } = await adminClient
+          .from("investment_withdrawals")
+          .insert({
+            user_id: user.id,
+            amount: parsed.data.amount,
+            status: "pending",
+          })
+          .select("id")
+          .single();
+
+        if (!fallbackError && inserted?.id) {
+          revalidatePath("/dashboard/investment");
+          return { success: true, data: { withdrawalId: String(inserted.id) } };
+        }
+      }
+    }
+
     if (error.message.includes("below_minimum")) {
       return {
         error: { field: "amount", message: "الحد الأدنى للسحب هو 10 USDT" },

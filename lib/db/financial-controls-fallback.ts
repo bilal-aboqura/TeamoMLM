@@ -9,6 +9,19 @@ export type FinancialControlsFallback = {
   paymentTargets?: Partial<Record<PaymentTargetScope, PaymentTarget>>;
   manualSoldPercentage?: number;
   tradingReport?: DbTradingReport;
+  manualInvestmentProfits?: Record<
+    string,
+    {
+      total: number;
+      entries: Array<{
+        id: string;
+        amount: number;
+        reason: string;
+        createdBy: string;
+        createdAt: string;
+      }>;
+    }
+  >;
 };
 
 export function isMissingSchema(errorMessage: string) {

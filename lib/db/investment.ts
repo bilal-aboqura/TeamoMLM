@@ -45,6 +45,18 @@ export async function getManualInvestmentProfitTotal(
     .select("amount")
     .eq("user_id", userId);
 
-  if (error) return 0;
-  return (data ?? []).reduce((total, row) => total + Number(row.amount ?? 0), 0);
+  const fallbackTotal =
+    (await readFinancialControlsFallback()).manualInvestmentProfits?.[userId]
+      ?.total ?? 0;
+
+  if (error) {
+    return Number(fallbackTotal);
+  }
+
+  const dbTotal = (data ?? []).reduce(
+    (total, row) => total + Number(row.amount ?? 0),
+    0
+  );
+
+  return dbTotal + Number(fallbackTotal);
 }
