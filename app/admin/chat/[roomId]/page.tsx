@@ -43,7 +43,7 @@ export default async function AdminChatRoomPage({
       )}
       <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)]">
         <div className="min-w-0">
-          <ChatSidebar rooms={rooms} activeRoomId={roomId} basePath="/admin/chat" />
+          <ChatSidebar rooms={rooms} activeRoomId={roomId} basePath="/admin/chat" showMemberCounts />
         </div>
         <ChatWindow
           room={room}
@@ -51,6 +51,7 @@ export default async function AdminChatRoomPage({
           initialNextCursor={initial.nextCursor}
           currentUserId={auth.userId}
           accessibleRooms={rooms}
+          showMemberCount
           isAdmin
         />
       </div>

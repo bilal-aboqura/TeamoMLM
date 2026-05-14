@@ -12,6 +12,7 @@ type Props = {
   activeRoomId?: string;
   basePath?: "/dashboard/chat" | "/admin/chat";
   showTicketButton?: boolean;
+  showMemberCounts?: boolean;
 };
 
 function roomHref(basePath: string, id: string) {
@@ -22,10 +23,12 @@ function RoomLink({
   room,
   active,
   basePath,
+  showMemberCounts,
 }: {
   room: ChatRoomSummary;
   active: boolean;
   basePath: string;
+  showMemberCounts: boolean;
 }) {
   const Icon = room.roomType === "blind_group" ? Users : room.roomType === "ticket" ? Ticket : MessageCircle;
 
@@ -43,7 +46,7 @@ function RoomLink({
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-bold">{room.name}</span>
-        {room.memberCount !== null && (
+        {showMemberCounts && room.memberCount !== null && (
           <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">
             {room.memberCount} أعضاء
           </span>
@@ -134,6 +137,7 @@ export function ChatSidebar({
   activeRoomId,
   basePath = "/dashboard/chat",
   showTicketButton = false,
+  showMemberCounts = false,
 }: Props) {
   const directRooms = rooms.filter((room) => room.roomType === "direct_message");
   const groupRooms = rooms.filter((room) => room.roomType === "blind_group");
@@ -145,19 +149,19 @@ export function ChatSidebar({
       <section className="space-y-2">
         <h2 className="text-xs font-bold text-slate-400">الرسائل المباشرة</h2>
         {directRooms.map((room) => (
-          <RoomLink key={room.id} room={room} active={room.id === activeRoomId} basePath={basePath} />
+          <RoomLink key={room.id} room={room} active={room.id === activeRoomId} basePath={basePath} showMemberCounts={showMemberCounts} />
         ))}
       </section>
       <section className="space-y-2">
         <h2 className="text-xs font-bold text-slate-400">المجموعات</h2>
         {groupRooms.map((room) => (
-          <RoomLink key={room.id} room={room} active={room.id === activeRoomId} basePath={basePath} />
+          <RoomLink key={room.id} room={room} active={room.id === activeRoomId} basePath={basePath} showMemberCounts={showMemberCounts} />
         ))}
       </section>
       <section className="space-y-2">
         <h2 className="text-xs font-bold text-slate-400">التذاكر</h2>
         {ticketRooms.map((room) => (
-          <RoomLink key={room.id} room={room} active={room.id === activeRoomId} basePath={basePath} />
+          <RoomLink key={room.id} room={room} active={room.id === activeRoomId} basePath={basePath} showMemberCounts={showMemberCounts} />
         ))}
       </section>
       {rooms.length === 0 && (

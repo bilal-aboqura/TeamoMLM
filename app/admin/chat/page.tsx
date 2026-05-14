@@ -52,7 +52,7 @@ export default async function AdminChatPage() {
       </div>
       <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)]">
         <div className="min-w-0">
-          <ChatSidebar rooms={rooms} basePath="/admin/chat" />
+          <ChatSidebar rooms={rooms} basePath="/admin/chat" showMemberCounts />
         </div>
         <main className="min-h-[560px] rounded-lg border border-slate-100 bg-white p-5 shadow-sm">
           {rooms.length === 0 ? (

@@ -18,6 +18,7 @@ type Props = {
   initialNextCursor: MessageCursor | null;
   currentUserId: string;
   accessibleRooms?: ChatRoomSummary[];
+  showMemberCount?: boolean;
   isAdmin?: boolean;
 };
 
@@ -49,6 +50,7 @@ export function ChatWindow({
   initialNextCursor,
   currentUserId,
   accessibleRooms = [],
+  showMemberCount = false,
   isAdmin = false,
 }: Props) {
   const router = useRouter();
@@ -174,7 +176,7 @@ export function ChatWindow({
     <section className="flex h-[72vh] min-h-[430px] min-w-0 flex-col overflow-hidden rounded-lg border border-slate-100 bg-white shadow-sm sm:min-h-[540px] lg:h-[calc(100vh-7rem)]">
       <header className="border-b border-slate-100 px-4 py-3">
         <h1 className="text-base font-bold text-slate-900">{room.name}</h1>
-        {room.memberCount !== null && room.roomType === "blind_group" && (
+        {showMemberCount && room.memberCount !== null && room.roomType === "blind_group" && (
           <p className="mt-1 text-xs font-medium text-slate-500">{room.memberCount} أعضاء</p>
         )}
       </header>

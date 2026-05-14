@@ -39,7 +39,7 @@ export async function listRoomsForUser(userId: string): Promise<ChatRoomSummary[
     .eq("is_deleted", false)
     .order("updated_at", { ascending: false });
 
-  return hydrateRoomSummaries((rooms ?? []) as RoomRow[]);
+  return hydrateRoomSummaries((rooms ?? []) as RoomRow[], { includeMemberCounts: false });
 }
 
 export async function listAdminRooms(auth: ChatAuthContext): Promise<ChatRoomSummary[]> {
@@ -52,7 +52,7 @@ export async function listAdminRooms(auth: ChatAuthContext): Promise<ChatRoomSum
       .eq("is_deleted", false)
       .order("updated_at", { ascending: false });
 
-    return hydrateRoomSummaries((data ?? []) as RoomRow[]);
+    return hydrateRoomSummaries((data ?? []) as RoomRow[], { includeMemberCounts: true });
   }
 
   const { data: participants } = await adminClient
@@ -71,16 +71,19 @@ export async function listAdminRooms(auth: ChatAuthContext): Promise<ChatRoomSum
     .eq("is_deleted", false)
     .order("updated_at", { ascending: false });
 
-  return hydrateRoomSummaries((data ?? []) as RoomRow[]);
+  return hydrateRoomSummaries((data ?? []) as RoomRow[], { includeMemberCounts: true });
 }
 
-export async function hydrateRoomSummaries(rooms: RoomRow[]): Promise<ChatRoomSummary[]> {
+export async function hydrateRoomSummaries(
+  rooms: RoomRow[],
+  options: { includeMemberCounts?: boolean } = {}
+): Promise<ChatRoomSummary[]> {
   const adminClient = createAdminClient();
   const summaries: ChatRoomSummary[] = [];
 
   for (const room of rooms) {
     let memberCount: number | null = null;
-    if (room.room_type === "blind_group") {
+    if (options.includeMemberCounts && room.room_type === "blind_group") {
       const { count } = await adminClient
         .from("chat_participants")
         .select("*", { count: "exact", head: true })

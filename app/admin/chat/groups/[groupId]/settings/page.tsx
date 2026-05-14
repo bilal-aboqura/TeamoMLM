@@ -1,6 +1,8 @@
 import { notFound, redirect } from "next/navigation";
+import { AddGroupMembersModal } from "@/components/chat/AddGroupMembersModal";
 import { MediaSettingsPanel } from "@/components/chat/MediaSettingsPanel";
 import { assignModeratorRole } from "../../../_actions/assignModeratorRole";
+import { listAllChatProfilePickerUsers } from "@/lib/chat/admin-users";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getChatAuthContext, normalizeMediaSettings } from "@/lib/chat/server";
 
@@ -32,6 +34,11 @@ export default async function GroupSettingsPage({
 
   if (!room) notFound();
 
+  const participantIds = new Set((participants ?? []).map((participant) => participant.user_id));
+  const availableMembers = (await listAllChatProfilePickerUsers([auth.userId])).filter(
+    (member) => !participantIds.has(member.user_id)
+  );
+
   async function setRole(formData: FormData) {
     "use server";
     await assignModeratorRole({
@@ -49,7 +56,10 @@ export default async function GroupSettingsPage({
       </div>
       <MediaSettingsPanel roomId={groupId} initialSettings={normalizeMediaSettings(room.media_settings)} />
       <section className="rounded-lg border border-slate-100 bg-white p-4">
-        <h2 className="mb-3 text-sm font-bold text-slate-900">الأعضاء</h2>
+        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-sm font-bold text-slate-900">الأعضاء</h2>
+          <AddGroupMembersModal roomId={groupId} availableMembers={availableMembers} />
+        </div>
         <div className="divide-y divide-slate-100">
           {(participants ?? []).map((participant) => {
             const profile = Array.isArray(participant.chat_profiles)

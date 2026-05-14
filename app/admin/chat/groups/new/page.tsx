@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { createGroup } from "../../_actions/createGroup";
+import { listAllChatProfilePickerUsers } from "@/lib/chat/admin-users";
 import { getChatAuthContext } from "@/lib/chat/server";
 
 export default async function NewChatGroupPage() {
@@ -8,13 +8,7 @@ export default async function NewChatGroupPage() {
   if (!auth) redirect("/login");
   if (auth.globalRole !== "admin") redirect("/admin/chat");
 
-  const adminClient = createAdminClient();
-  const { data: members } = await adminClient
-    .from("chat_profiles")
-    .select("user_id, display_name, global_role")
-    .neq("user_id", auth.userId)
-    .order("display_name", { ascending: true })
-    .limit(200);
+  const members = await listAllChatProfilePickerUsers([auth.userId]);
 
   async function submit(formData: FormData) {
     "use server";
@@ -55,7 +49,7 @@ export default async function NewChatGroupPage() {
         <div>
           <label className="mb-2 block text-sm font-bold text-slate-700">الأعضاء</label>
           <div className="max-h-72 space-y-2 overflow-y-auto rounded-lg border border-slate-100 p-2">
-            {(members ?? []).map((member) => (
+            {members.map((member) => (
               <label key={member.user_id} className="flex items-center gap-3 rounded-lg p-2 hover:bg-slate-50">
                 <input
                   type="checkbox"
