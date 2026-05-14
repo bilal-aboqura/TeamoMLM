@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Download, CheckSquare, Banknote, Users, Coins, Trophy, Settings, Menu, X, LogOut, TrendingUp, Smartphone, ClipboardList, CreditCard } from "lucide-react";
+import { LayoutDashboard, Download, CheckSquare, Banknote, Users, Coins, Trophy, Settings, Menu, X, LogOut, TrendingUp, Smartphone, ClipboardList, CreditCard, MessageCircle } from "lucide-react";
 import { logoutUser } from "@/app/(auth)/actions";
 
 const navLinks = [
@@ -32,6 +32,11 @@ const navLinks = [
     href: "/admin/tasks",
     label: "إدارة المهام",
     icon: <CheckSquare className="w-5 h-5" strokeWidth={2} />,
+  },
+  {
+    href: "/admin/chat",
+    label: "المحادثات",
+    icon: <MessageCircle className="w-5 h-5" strokeWidth={2} />,
   },
   {
     href: "/admin/app-profits/manage",

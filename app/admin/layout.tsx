@@ -18,15 +18,18 @@ export default async function AdminLayout({
   if (!user) redirect("/login");
 
   const adminClient = createAdminClient();
-  const { data: profile, error: profileError } = await adminClient
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
+  const [{ data: profile, error: profileError }, { data: chatProfile }] = await Promise.all([
+    adminClient.from("users").select("role").eq("id", user.id).maybeSingle(),
+    adminClient
+      .from("chat_profiles")
+      .select("global_role")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
 
   console.log("ADMIN LAYOUT — user:", user.id, "profile:", profile, "error:", profileError?.message);
 
-  if (profile?.role !== "admin") {
+  if (profile?.role !== "admin" && chatProfile?.global_role !== "moderator") {
     redirect("/dashboard");
   }
 

@@ -33,6 +33,11 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAuthed = !!user;
   const isAdminRoute = pathname.startsWith("/admin");
+  const isAdminChatRoute = pathname.startsWith("/admin/chat");
+  const isAdminChatAuditRoute =
+    pathname.startsWith("/admin/chat/blacklist") || pathname.startsWith("/admin/chat/logs");
+  const isAdminChatSettingsRoute =
+    pathname.startsWith("/admin/chat/groups/") && pathname.endsWith("/settings");
   const isAuthPage = pathname === "/login" || pathname === "/register";
   const isDashboard = pathname.startsWith("/dashboard");
   const isRoot = pathname === "/";
@@ -42,8 +47,22 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isAdminRoute && isAuthed) {
-    const role = user?.app_metadata?.role;
-    if (role !== "admin") {
+    const { data: chatProfile } = await supabase
+      .from("chat_profiles")
+      .select("global_role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const role = chatProfile?.global_role ?? user?.app_metadata?.role;
+
+    if ((isAdminChatSettingsRoute || isAdminChatAuditRoute) && role === "moderator") {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
+
+    if (isAdminChatRoute) {
+      if (role !== "admin" && role !== "moderator") {
+        return new NextResponse("Forbidden", { status: 403 });
+      }
+    } else if (role !== "admin") {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
