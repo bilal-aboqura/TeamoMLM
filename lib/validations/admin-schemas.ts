@@ -35,6 +35,11 @@ export const adjustUserBalanceSchema = z.object({
   reason: z.string().min(3, "يجب تحديد سبب التعديل بوضوح").trim(),
 });
 
+export const adminResetUserPasswordSchema = z.object({
+  userId: z.string().uuid(),
+  newPassword: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل").max(72),
+});
+
 export type ApproveDepositInput = z.infer<typeof approveDepositSchema>;
 export type RejectDepositInput = z.infer<typeof rejectDepositSchema>;
 export type ApproveTaskInput = z.infer<typeof approveTaskSchema>;
@@ -42,6 +47,7 @@ export type RejectTaskInput = z.infer<typeof rejectTaskSchema>;
 export type UpdateUserLevelInput = z.infer<typeof updateUserLevelSchema>;
 export type ToggleUserStatusInput = z.infer<typeof toggleUserStatusSchema>;
 export type AdjustUserBalanceInput = z.infer<typeof adjustUserBalanceSchema>;
+export type AdminResetUserPasswordInput = z.infer<typeof adminResetUserPasswordSchema>;
 
 
 // ---- Task CRUD Schemas ----

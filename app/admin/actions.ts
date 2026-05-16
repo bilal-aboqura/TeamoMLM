@@ -16,6 +16,7 @@ import {
   updatePaymentSettingsSchema,
   toggleUserStatusSchema,
   adjustUserBalanceSchema,
+  adminResetUserPasswordSchema,
 } from "@/lib/validations/admin-schemas";
 import type { PaymentTargetScope } from "@/lib/db/payment-targets";
 import {
@@ -276,6 +277,34 @@ export async function adjustUserBalance(
     console.error("FAIL to store user balance adjustment:", adjustmentError);
   }
 
+  return { success: true };
+}
+
+export async function adminResetUserPassword(
+  userId: string,
+  newPassword: string
+): Promise<AdminActionResult> {
+  const adminId = await verifyAdmin();
+  if (!adminId) return { error: "غير مصرح لك بهذا الإجراء" };
+
+  const parsed = adminResetUserPasswordSchema.safeParse({ userId, newPassword });
+  if (!parsed.success) {
+    const firstError = parsed.error.errors[0];
+    return { error: firstError?.message ?? "بيانات غير صالحة" };
+  }
+
+  const adminClient = createAdminClient();
+  const { error } = await adminClient.auth.admin.updateUserById(
+    parsed.data.userId,
+    { password: parsed.data.newPassword }
+  );
+
+  if (error) {
+    console.error("adminResetUserPassword error:", error.message);
+    return { error: "حدث خطأ أثناء تغيير كلمة المرور" };
+  }
+
+  revalidatePath("/admin/users");
   return { success: true };
 }
 

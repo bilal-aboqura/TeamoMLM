@@ -3,9 +3,14 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { KeyRound } from "lucide-react";
 import { EditLevelPanel } from "./EditLevelPanel";
 import { AdjustBalancePanel } from "./AdjustBalancePanel";
-import { toggleUserStatus, deleteUserAction } from "@/app/admin/actions";
+import {
+  adminResetUserPassword,
+  toggleUserStatus,
+  deleteUserAction,
+} from "@/app/admin/actions";
 import { LocalDate } from "@/components/ui/LocalDate";
 
 type UserRow = {
@@ -183,6 +188,96 @@ function DeleteModal({
   );
 }
 
+function ResetPasswordModal({
+  userName,
+  pending,
+  onClose,
+  onConfirm,
+}: {
+  userName: string;
+  pending: boolean;
+  onClose: () => void;
+  onConfirm: (newPassword: string) => void;
+}) {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = () => {
+    const password = newPassword.trim();
+    if (password.length < 8) {
+      setError("كلمة المرور يجب أن تكون 8 أحرف على الأقل");
+      return;
+    }
+    if (password !== confirmPassword.trim()) {
+      setError("كلمتا المرور غير متطابقتين");
+      return;
+    }
+    onConfirm(password);
+  };
+
+  return (
+    <>
+      <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50" onClick={pending ? undefined : onClose} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-3">
+            <KeyRound className="w-5 h-5 text-blue-600" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900 mb-1">
+            تغيير كلمة المرور
+          </h3>
+          <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+            سيتم تغيير كلمة مرور {userName} مباشرة دون طلب كلمة المرور الحالية.
+          </p>
+          <div className="space-y-3">
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => {
+                setNewPassword(e.target.value);
+                setError("");
+              }}
+              placeholder="كلمة المرور الجديدة"
+              autoComplete="new-password"
+              autoFocus
+              className="w-full border border-slate-200 rounded-xl bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 outline-none transition-all"
+            />
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                setError("");
+              }}
+              placeholder="تأكيد كلمة المرور"
+              autoComplete="new-password"
+              className="w-full border border-slate-200 rounded-xl bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 outline-none transition-all"
+            />
+          </div>
+          {error && <p className="text-xs text-rose-600 mt-2">{error}</p>}
+          <div className="flex items-center gap-3 mt-5">
+            <button
+              onClick={onClose}
+              disabled={pending}
+              className="flex-1 bg-slate-100 text-slate-700 rounded-xl py-2.5 text-sm font-medium hover:bg-slate-200 transition-all active:scale-95 disabled:opacity-50"
+            >
+              إلغاء
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={pending}
+              className="flex-1 bg-blue-600 text-white rounded-xl py-2.5 text-sm font-medium hover:bg-blue-500 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_8px_rgba(37,99,235,0.25)]"
+            >
+              {pending ? "جار التغيير..." : "تأكيد التغيير"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function UsersTable({
   users,
   totalCount,
@@ -202,6 +297,8 @@ export function UsersTable({
   const [togglingStatusId, setTogglingStatusId] = useState<string | null>(null);
   const [suspendingUser, setSuspendingUser] = useState<UserRow | null>(null);
   const [deletingUser, setDeletingUser] = useState<UserRow | null>(null);
+  const [resettingPasswordUser, setResettingPasswordUser] = useState<UserRow | null>(null);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -269,6 +366,23 @@ export function UsersTable({
        } else {
          showToast(result.error, "error");
        }
+    });
+  };
+
+  const handleConfirmPasswordReset = async (newPassword: string) => {
+    if (!resettingPasswordUser) return;
+    const userId = resettingPasswordUser.id;
+    setIsResettingPassword(true);
+    startTransition(async () => {
+      const result = await adminResetUserPassword(userId, newPassword);
+      setIsResettingPassword(false);
+      if ("success" in result) {
+        setResettingPasswordUser(null);
+        showToast("تم تغيير كلمة المرور بنجاح", "success");
+        router.refresh();
+      } else {
+        showToast(result.error, "error");
+      }
     });
   };
 
@@ -399,6 +513,17 @@ export function UsersTable({
                         )}
                         {user.status === "active" ? "تجميد" : "فك التجميد"}
                       </button>
+                      {/* Reset Password */}
+                      <button
+                        onClick={() => setResettingPasswordUser(user)}
+                        disabled={isResettingPassword || isPending}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200/60 transition-all duration-150 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                        title="تغيير كلمة المرور"
+                        aria-label="تغيير كلمة المرور"
+                      >
+                        <KeyRound className="w-3.5 h-3.5" />
+                        تغيير كلمة المرور
+                      </button>
                       {/* Adjust Balance */}
                       <button
                         onClick={() => setAdjustingBalanceUser(user)}
@@ -516,6 +641,16 @@ export function UsersTable({
           userName={suspendingUser.full_name}
           onClose={() => setSuspendingUser(null)}
           onConfirm={handleConfirmSuspend}
+        />
+      )}
+
+      {/* Reset Password Modal */}
+      {resettingPasswordUser && (
+        <ResetPasswordModal
+          userName={resettingPasswordUser.full_name}
+          pending={isResettingPassword}
+          onClose={() => setResettingPasswordUser(null)}
+          onConfirm={handleConfirmPasswordReset}
         />
       )}
 
