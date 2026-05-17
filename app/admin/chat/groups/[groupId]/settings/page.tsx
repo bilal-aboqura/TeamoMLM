@@ -28,7 +28,7 @@ export default async function GroupSettingsPage({
       .maybeSingle(),
     adminClient
       .from("chat_participants")
-      .select("user_id, room_role, can_send_messages, chat_profiles(display_name)")
+      .select("user_id, room_role, is_muted, chat_profiles(display_name)")
       .eq("room_id", groupId)
       .order("joined_at", { ascending: true }),
   ]);
@@ -58,7 +58,7 @@ export default async function GroupSettingsPage({
       userId: participant.user_id,
       displayName: profile?.display_name ?? "مستخدم",
       role: participant.room_role,
-      canSendMessages: participant.can_send_messages !== false,
+      canSendMessages: participant.is_muted !== true,
     };
   });
 

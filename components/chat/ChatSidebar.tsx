@@ -80,7 +80,7 @@ function TicketForm() {
     });
     setPending(false);
     if (!result.success) {
-      setError("ØªØ¹Ø°Ø± ÙØªØ­ Ø§Ù„ØªØ°ÙƒØ±Ø©. Ø±Ø§Ø¬Ø¹ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª ÙˆØ­Ø§ÙˆÙ„ Ù…Ø±Ø© Ø£Ø®Ø±Ù‰.");
+      setError("تعذر فتح التذكرة. راجع البيانات وحاول مرة أخرى.");
       return;
     }
     router.push(`/dashboard/chat/${result.roomId}`);
@@ -94,7 +94,7 @@ function TicketForm() {
         className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-bold text-white transition hover:bg-emerald-700"
       >
         <Plus className="h-4 w-4" />
-        ÙØªØ­ ØªØ°ÙƒØ±Ø© Ø¯Ø¹Ù…
+        فتح تذكرة دعم
       </button>
     );
   }
@@ -106,7 +106,7 @@ function TicketForm() {
         required
         minLength={5}
         maxLength={120}
-        placeholder="Ø¹Ù†ÙˆØ§Ù† Ø§Ù„ØªØ°ÙƒØ±Ø©"
+        placeholder="عنوان التذكرة"
         className="w-full rounded-lg border border-emerald-100 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-300"
       />
       <textarea
@@ -115,7 +115,7 @@ function TicketForm() {
         minLength={10}
         maxLength={4000}
         rows={3}
-        placeholder="Ø§ÙƒØªØ¨ Ø±Ø³Ø§Ù„ØªÙƒ"
+        placeholder="اكتب رسالتك"
         className="w-full resize-none rounded-lg border border-emerald-100 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-300"
       />
       {error && <p className="text-xs font-medium text-rose-600">{error}</p>}
@@ -125,14 +125,14 @@ function TicketForm() {
           disabled={pending}
           className="flex-1 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-bold text-white disabled:opacity-60"
         >
-          {pending ? "Ø¬Ø§Ø±Ù Ø§Ù„Ø¥Ø±Ø³Ø§Ù„..." : "Ø¥Ø±Ø³Ø§Ù„"}
+          {pending ? "جار الإرسال..." : "إرسال"}
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
           className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-600"
         >
-          Ø¥Ù„ØºØ§Ø¡
+          إلغاء
         </button>
       </div>
     </form>
@@ -154,26 +154,26 @@ export function ChatSidebar({
     <aside className="space-y-4">
       {showTicketButton && <TicketForm />}
       <section className="space-y-2">
-        <h2 className="text-xs font-bold text-slate-400">Ø§Ù„Ø±Ø³Ø§Ø¦Ù„ Ø§Ù„Ù…Ø¨Ø§Ø´Ø±Ø©</h2>
+        <h2 className="text-xs font-bold text-slate-400">الرسائل المباشرة</h2>
         {directRooms.map((room) => (
           <RoomLink key={room.id} room={room} active={room.id === activeRoomId} basePath={basePath} showMemberCounts={showMemberCounts} />
         ))}
       </section>
       <section className="space-y-2">
-        <h2 className="text-xs font-bold text-slate-400">Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Ø§Øª</h2>
+        <h2 className="text-xs font-bold text-slate-400">المجموعات</h2>
         {groupRooms.map((room) => (
           <RoomLink key={room.id} room={room} active={room.id === activeRoomId} basePath={basePath} showMemberCounts={showMemberCounts} />
         ))}
       </section>
       <section className="space-y-2">
-        <h2 className="text-xs font-bold text-slate-400">Ø§Ù„ØªØ°Ø§ÙƒØ±</h2>
+        <h2 className="text-xs font-bold text-slate-400">التذاكر</h2>
         {ticketRooms.map((room) => (
           <RoomLink key={room.id} room={room} active={room.id === activeRoomId} basePath={basePath} showMemberCounts={showMemberCounts} />
         ))}
       </section>
       {rooms.length === 0 && (
         <div className="rounded-lg border border-dashed border-slate-200 bg-white p-5 text-center text-sm text-slate-500">
-          Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ø­Ø§Ø¯Ø«Ø§Øª Ø¨Ø¹Ø¯
+          لا توجد محادثات بعد
         </div>
       )}
     </aside>

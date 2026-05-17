@@ -69,7 +69,7 @@ export interface ChatParticipant {
   room_role: RoomRole;
   last_read_position: string | null;
   is_muted: boolean;
-  can_send_messages: boolean;
+  can_send_messages?: boolean;
   joined_at: string;
 }
 

@@ -86,14 +86,14 @@ export function VoiceRecorder({ roomId, parentMessageId, onSent, onError }: Prop
     return (
       <div className="flex items-center gap-2 rounded-lg border border-rose-100 bg-rose-50 px-2 py-1">
         <span className="h-2 w-2 animate-pulse rounded-full bg-rose-600" />
-        <span className="text-xs font-bold text-rose-700">Ø¬Ø§Ø± Ø§Ù„ØªØ³Ø¬ÙŠÙ„</span>
+        <span className="text-xs font-bold text-rose-700">جار التسجيل</span>
         <button
           type="button"
           onClick={recorder.stopRecording}
           className="h-8 rounded-lg bg-rose-600 px-3 text-xs font-bold text-white"
-          aria-label="Ø¥ÙŠÙ‚Ø§Ù Ø§Ù„ØªØ³Ø¬ÙŠÙ„"
+          aria-label="إيقاف التسجيل"
         >
-          Ø¥ÙŠÙ‚Ø§Ù
+          إيقاف
         </button>
       </div>
     );
@@ -109,7 +109,7 @@ export function VoiceRecorder({ roomId, parentMessageId, onSent, onError }: Prop
           onClick={handleSend}
           disabled={uploading || isPending}
           className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white disabled:opacity-50"
-          aria-label="Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„ØªØ³Ø¬ÙŠÙ„"
+          aria-label="إرسال التسجيل"
         >
           <Send className="h-4 w-4" />
         </button>
@@ -117,7 +117,7 @@ export function VoiceRecorder({ roomId, parentMessageId, onSent, onError }: Prop
           type="button"
           onClick={recorder.discard}
           className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-rose-600"
-          aria-label="Ø­Ø°Ù Ø§Ù„ØªØ³Ø¬ÙŠÙ„"
+          aria-label="حذف التسجيل"
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -129,11 +129,11 @@ export function VoiceRecorder({ roomId, parentMessageId, onSent, onError }: Prop
     <button
       type="button"
       onClick={() => {
-        recorder.startRecording().catch(() => onError?.("ØªØ¹Ø°Ø± Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ Ø§Ù„Ù…ÙŠÙƒØ±ÙˆÙÙˆÙ†."));
+        recorder.startRecording().catch(() => onError?.("تعذر الوصول إلى الميكروفون."));
       }}
       className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-700"
-      aria-label="ØªØ³Ø¬ÙŠÙ„ Ø±Ø³Ø§Ù„Ø© ØµÙˆØªÙŠØ©"
-      title="ØªØ³Ø¬ÙŠÙ„ Ø±Ø³Ø§Ù„Ø© ØµÙˆØªÙŠØ©"
+      aria-label="تسجيل رسالة صوتية"
+      title="تسجيل رسالة صوتية"
     >
       <Mic className="h-4 w-4" />
     </button>
