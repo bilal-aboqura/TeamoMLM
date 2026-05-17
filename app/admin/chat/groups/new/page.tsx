@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createGroup } from "../../_actions/createGroup";
 import { listAllChatProfilePickerUsers } from "@/lib/chat/admin-users";
 import { getChatAuthContext } from "@/lib/chat/server";
+import { MemberPickerList } from "@/components/chat/MemberPickerList";
 
 export default async function NewChatGroupPage() {
   const auth = await getChatAuthContext();
@@ -48,22 +49,9 @@ export default async function NewChatGroupPage() {
         </div>
         <div>
           <label className="mb-2 block text-sm font-bold text-slate-700">الأعضاء</label>
-          <div className="max-h-72 space-y-2 overflow-y-auto rounded-lg border border-slate-100 p-2">
-            {members.map((member) => (
-              <label key={member.user_id} className="flex items-center gap-3 rounded-lg p-2 hover:bg-slate-50">
-                <input
-                  type="checkbox"
-                  name="memberIds"
-                  value={member.user_id}
-                  className="h-4 w-4 accent-emerald-600"
-                />
-                <span className="text-sm font-bold text-slate-700">{member.display_name}</span>
-                <span className="text-xs text-slate-400">{member.global_role}</span>
-              </label>
-            ))}
-          </div>
+          <MemberPickerList members={members} />
         </div>
-        <button className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white">
+        <button className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700 transition-colors">
           إنشاء المجموعة
         </button>
       </form>
