@@ -87,13 +87,13 @@ export async function sendMessage(input: SendMessageInput | FormData): Promise<S
 
   const { data: participant } = await adminClient
     .from("chat_participants")
-    .select("room_id, is_muted")
+    .select("room_id, can_send_messages")
     .eq("room_id", roomId)
     .eq("user_id", auth.userId)
     .maybeSingle();
 
   if (!participant) return { success: false, error: "UNAUTHORIZED" };
-  if (participant.is_muted === true) {
+  if (participant.can_send_messages === false) {
     return { success: false, error: "CANNOT_SEND_MESSAGES" };
   }
 

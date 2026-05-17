@@ -28,14 +28,14 @@ export async function createVoiceUploadUrl(input: z.input<typeof schema>): Promi
       .maybeSingle(),
     adminClient
       .from("chat_participants")
-      .select("room_id, is_muted")
+      .select("room_id, can_send_messages")
       .eq("room_id", parsed.data.roomId)
       .eq("user_id", auth.userId)
       .maybeSingle(),
   ]);
 
   if (!participant) return { success: false, error: "UNAUTHORIZED" };
-  if (participant.is_muted === true) {
+  if (participant.can_send_messages === false) {
     return { success: false, error: "CANNOT_SEND_MESSAGES" };
   }
   if (!room || room.is_deleted) return { success: false, error: "VALIDATION_ERROR" };

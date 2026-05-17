@@ -68,10 +68,12 @@ export interface ChatParticipant {
   user_id: string;
   room_role: RoomRole;
   last_read_position: string | null;
-  is_muted: boolean;
-  can_send_messages?: boolean;
+  /** @deprecated Use can_send_messages instead */
+  is_muted?: boolean;
+  can_send_messages: boolean;
   joined_at: string;
 }
+
 
 export interface ChatMessage {
   id: string;

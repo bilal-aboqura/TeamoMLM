@@ -34,25 +34,13 @@ export async function toggleParticipantSendPermission(input: z.input<typeof sche
     return { success: false, error: "PARTICIPANT_NOT_FOUND" };
   }
 
-  const nextMuted = !parsed.data.canSendMessages;
   const { error } = await adminClient
     .from("chat_participants")
-    .update({
-      can_send_messages: parsed.data.canSendMessages,
-      is_muted: nextMuted,
-    })
+    .update({ can_send_messages: parsed.data.canSendMessages })
     .eq("room_id", parsed.data.roomId)
     .eq("user_id", parsed.data.userId);
 
-  if (error) {
-    const { error: fallbackError } = await adminClient
-      .from("chat_participants")
-      .update({ is_muted: nextMuted })
-      .eq("room_id", parsed.data.roomId)
-      .eq("user_id", parsed.data.userId);
-
-    if (fallbackError) return { success: false, error: "VALIDATION_ERROR" };
-  }
+  if (error) return { success: false, error: "VALIDATION_ERROR" };
   revalidatePath(`/admin/chat/groups/${parsed.data.roomId}/settings`);
   revalidatePath(`/admin/chat/${parsed.data.roomId}`);
   return { success: true };
