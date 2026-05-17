@@ -69,6 +69,7 @@ export interface ChatParticipant {
   room_role: RoomRole;
   last_read_position: string | null;
   is_muted: boolean;
+  can_send_messages: boolean;
   joined_at: string;
 }
 
@@ -131,6 +132,7 @@ export interface ChatRoomSummary {
   memberCount: number | null;
   mediaSettings: MediaSettings;
   updatedAt: string;
+  unreadCount: number;
 }
 
 export const DEFAULT_MEDIA_SETTINGS: MediaSettings = {

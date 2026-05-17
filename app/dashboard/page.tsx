@@ -6,6 +6,7 @@ import { BalanceCard } from "./_components/BalanceCard";
 import { PackageStatusBadge } from "./_components/PackageStatusBadge";
 import { ReferralTool } from "./_components/ReferralTool";
 import { LogoutButton } from "./_components/LogoutButton";
+import { listRoomsForUser } from "@/lib/chat/rooms";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -25,6 +26,8 @@ export default async function DashboardPage() {
     .maybeSingle();
 
   if (!profile) redirect("/login");
+  const chatRooms = await listRoomsForUser(user.id);
+  const unreadChatCount = chatRooms.reduce((total, room) => total + room.unreadCount, 0);
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8 lg:py-12">
@@ -120,8 +123,13 @@ export default async function DashboardPage() {
                 href="/dashboard/chat"
                 className="bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] group flex flex-col items-center justify-center gap-2"
               >
-                <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center transition-colors group-hover:bg-emerald-50 text-slate-400 group-hover:text-emerald-600">
+                <div className="relative w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center transition-colors group-hover:bg-emerald-50 text-slate-400 group-hover:text-emerald-600">
                   <MessageCircle className="w-6 h-6" strokeWidth={2} />
+                  {unreadChatCount > 0 && (
+                    <span className="absolute -end-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full bg-rose-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      {unreadChatCount > 99 ? "99+" : unreadChatCount}
+                    </span>
+                  )}
                 </div>
                 <span className="text-sm font-medium text-slate-700">المحادثات</span>
               </Link>

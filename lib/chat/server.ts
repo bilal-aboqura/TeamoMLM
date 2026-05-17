@@ -122,5 +122,6 @@ export async function getRoomSummary(roomId: string): Promise<ChatRoomSummary | 
     memberCount: null,
     mediaSettings: normalizeMediaSettings(data.media_settings),
     updatedAt: data.updated_at,
+    unreadCount: 0,
   };
 }

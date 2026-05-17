@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MessageCircle, Plus } from "lucide-react";
+import { AdminDirectMessageModal } from "@/components/chat/AdminDirectMessageModal";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { listAllChatProfilePickerUsers } from "@/lib/chat/admin-users";
 import { getChatAuthContext } from "@/lib/chat/server";
 import { listAdminRooms } from "@/lib/chat/rooms";
 
@@ -11,7 +13,10 @@ export default async function AdminChatPage() {
   if (!auth) redirect("/login");
   if (auth.globalRole !== "admin" && auth.globalRole !== "moderator") redirect("/dashboard");
 
-  const rooms = await listAdminRooms(auth);
+  const [rooms, directMessageUsers] = await Promise.all([
+    listAdminRooms(auth),
+    auth.globalRole === "admin" ? listAllChatProfilePickerUsers([auth.userId]) : Promise.resolve([]),
+  ]);
   const adminClient = createAdminClient();
   const roomMembers = new Map<string, string[]>();
 
@@ -52,6 +57,11 @@ export default async function AdminChatPage() {
       </div>
       <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)]">
         <div className="min-w-0">
+          {auth.globalRole === "admin" && (
+            <div className="mb-3">
+              <AdminDirectMessageModal users={directMessageUsers} />
+            </div>
+          )}
           <ChatSidebar rooms={rooms} basePath="/admin/chat" showMemberCounts />
         </div>
         <main className="min-h-[560px] rounded-lg border border-slate-100 bg-white p-5 shadow-sm">

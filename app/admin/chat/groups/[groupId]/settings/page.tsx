@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { AddGroupMembersModal } from "@/components/chat/AddGroupMembersModal";
+import { GroupMembersManager, type GroupMember } from "@/components/chat/GroupMembersManager";
 import { MediaSettingsPanel } from "@/components/chat/MediaSettingsPanel";
 import { assignModeratorRole } from "../../../_actions/assignModeratorRole";
 import { listAllChatProfilePickerUsers } from "@/lib/chat/admin-users";
@@ -27,7 +28,7 @@ export default async function GroupSettingsPage({
       .maybeSingle(),
     adminClient
       .from("chat_participants")
-      .select("user_id, room_role, chat_profiles(display_name)")
+      .select("user_id, room_role, can_send_messages, chat_profiles(display_name)")
       .eq("room_id", groupId)
       .order("joined_at", { ascending: true }),
   ]);
@@ -48,6 +49,19 @@ export default async function GroupSettingsPage({
     });
   }
 
+  const members: GroupMember[] = (participants ?? []).map((participant) => {
+    const profile = Array.isArray(participant.chat_profiles)
+      ? participant.chat_profiles[0]
+      : participant.chat_profiles;
+
+    return {
+      userId: participant.user_id,
+      displayName: profile?.display_name ?? "مستخدم",
+      role: participant.room_role,
+      canSendMessages: participant.can_send_messages !== false,
+    };
+  });
+
   return (
     <div className="mx-auto max-w-4xl space-y-5" dir="rtl">
       <div>
@@ -60,7 +74,10 @@ export default async function GroupSettingsPage({
           <h2 className="text-sm font-bold text-slate-900">الأعضاء</h2>
           <AddGroupMembersModal roomId={groupId} availableMembers={availableMembers} />
         </div>
-        <div className="divide-y divide-slate-100">
+        <GroupMembersManager roomId={groupId} members={members} />
+        <div className="mt-6 border-t border-slate-100 pt-4">
+          <h3 className="mb-2 text-xs font-bold text-slate-400">إدارة المشرفين</h3>
+          <div className="divide-y divide-slate-100">
           {(participants ?? []).map((participant) => {
             const profile = Array.isArray(participant.chat_profiles)
               ? participant.chat_profiles[0]
@@ -88,6 +105,7 @@ export default async function GroupSettingsPage({
               </div>
             );
           })}
+          </div>
         </div>
       </section>
     </div>

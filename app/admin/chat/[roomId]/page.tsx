@@ -1,8 +1,9 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Settings } from "lucide-react";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatWindow } from "@/components/chat/ChatWindow";
+import { DeleteRoomButton } from "@/components/chat/DeleteRoomButton";
 import { getMessages } from "@/app/dashboard/chat/_actions/getMessages";
 import { getChatAuthContext, getParticipantRole, getRoomSummary } from "@/lib/chat/server";
 import { listAdminRooms } from "@/lib/chat/rooms";
@@ -30,15 +31,18 @@ export default async function AdminChatRoomPage({
 
   return (
     <div className="space-y-4" dir="rtl">
-      {auth.globalRole === "admin" && room.roomType === "blind_group" && (
-        <div className="flex justify-end">
-          <Link
-            href={`/admin/chat/groups/${roomId}/settings`}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700"
-          >
-            <Settings className="h-4 w-4" />
-            إعدادات المجموعة
-          </Link>
+      {auth.globalRole === "admin" && (
+        <div className="flex flex-wrap justify-end gap-2">
+          <DeleteRoomButton roomId={roomId} />
+          {room.roomType === "blind_group" && (
+            <Link
+              href={`/admin/chat/groups/${roomId}/settings`}
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700"
+            >
+              <Settings className="h-4 w-4" />
+              إعدادات المجموعة
+            </Link>
+          )}
         </div>
       )}
       <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)]">

@@ -3,6 +3,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { AdminSidebar } from "./_components/AdminSidebar";
 import { AdminMobileHeader } from "./_components/AdminMobileHeader";
+import { listAdminRooms } from "@/lib/chat/rooms";
+import type { GlobalRole } from "@/lib/chat/types";
 
 export default async function AdminLayout({
   children,
@@ -33,13 +35,21 @@ export default async function AdminLayout({
     redirect("/dashboard");
   }
 
+  const chatRole: GlobalRole = profile?.role === "admin" ? "admin" : "moderator";
+  const chatRooms = await listAdminRooms({
+    userId: user.id,
+    globalRole: chatRole,
+    displayName: "Admin",
+  });
+  const unreadChatCount = chatRooms.reduce((total, room) => total + room.unreadCount, 0);
+
   return (
     <div className="min-h-screen bg-slate-100" dir="rtl">
       {/* Fixed sidebar (desktop only) */}
-      <AdminSidebar />
+      <AdminSidebar unreadChatCount={unreadChatCount} />
 
       {/* Glassmorphic sticky header (mobile only) */}
-      <AdminMobileHeader />
+      <AdminMobileHeader unreadChatCount={unreadChatCount} />
 
       {/* Main content — offset by sidebar width on desktop */}
       <main className="lg:ps-64 min-h-screen">

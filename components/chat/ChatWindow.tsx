@@ -103,6 +103,10 @@ export function ChatWindow({
         { event: "UPDATE", schema: "public", table: "chat_rooms", filter: `id=eq.${room.id}` },
         (payload) => {
           const next = payload.new.media_settings as MediaSettings | undefined;
+          if (payload.new.is_deleted === true) {
+            router.push(isAdmin ? "/admin/chat?removed=1" : "/dashboard/chat?removed=1");
+            return;
+          }
           if (next) setMediaSettings(next);
         }
       )
@@ -119,7 +123,7 @@ export function ChatWindow({
           filter: `user_id=eq.${currentUserId}`,
         },
         () => {
-          router.push("/dashboard/chat?removed=1");
+          router.push(isAdmin ? "/admin/chat?removed=1" : "/dashboard/chat?removed=1");
         }
       )
       .subscribe();
@@ -134,7 +138,19 @@ export function ChatWindow({
       void supabase.removeChannel(settingsChannel);
       void supabase.removeChannel(participantChannel);
     };
-  }, [currentUserId, refreshLatest, room.id, router, supabase]);
+  }, [currentUserId, isAdmin, refreshLatest, room.id, router, supabase]);
+
+  useEffect(() => {
+    const readableIds = messages
+      .filter((message) => !message.isOwn && !message.isDeleted)
+      .map((message) => message.id)
+      .filter((id) => !id.startsWith("optimistic-"));
+    if (readableIds.length === 0) return;
+    void markMessagesAsRead({
+      roomId: room.id,
+      messageIds: readableIds.slice(-50),
+    });
+  }, [messages, room.id]);
 
   useEffect(() => {
     if (room.roomType !== "direct_message") return;

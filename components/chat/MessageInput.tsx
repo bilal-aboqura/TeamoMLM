@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useRef, useState } from "react";
 import { Send } from "lucide-react";
@@ -42,7 +42,7 @@ export function MessageInput({
     onOptimisticMessage?.({
       id: optimisticId,
       content: content.trim() || null,
-      senderLabel: "أنت",
+      senderLabel: "Ø£Ù†Øª",
       senderRole: "member",
       isOwn: true,
       serverTimestamp: new Date().toISOString(),
@@ -68,16 +68,18 @@ export function MessageInput({
     setPending(false);
     if (!result) {
       onMessageFailed?.(optimisticId);
-      setError("فشل إرسال الرسالة. حاول مرة أخرى.");
+      setError("ÙØ´Ù„ Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„Ø±Ø³Ø§Ù„Ø©. Ø­Ø§ÙˆÙ„ Ù…Ø±Ø© Ø£Ø®Ø±Ù‰.");
       return;
     }
     if (!result.success) {
       onMessageFailed?.(optimisticId);
-      setError(
-        result.error === "CONTENT_POLICY_VIOLATION"
-          ? "تم رفض رسالتك بسبب انتهاك سياسة المحتوى."
-          : "فشل إرسال الرسالة. حاول مرة أخرى."
-      );
+      if (result.error === "CONTENT_POLICY_VIOLATION") {
+        setError("تم رفض رسالتك بسبب انتهاك سياسة المحتوى.");
+      } else if (result.error === "CANNOT_SEND_MESSAGES") {
+        setError("تم تقييدك من إرسال الرسائل في هذه المحادثة.");
+      } else {
+        setError("فشل إرسال الرسالة. حاول مرة أخرى.");
+      }
       return;
     }
     setContent("");
@@ -93,7 +95,7 @@ export function MessageInput({
           onChange={(event) => setContent(event.target.value.slice(0, 4000))}
           rows={2}
           maxLength={4000}
-          placeholder="اكتب رسالة..."
+          placeholder="Ø§ÙƒØªØ¨ Ø±Ø³Ø§Ù„Ø©..."
           className="w-full resize-none bg-transparent px-2 py-1 text-sm text-slate-800 outline-none"
         />
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -123,8 +125,8 @@ export function MessageInput({
               type="submit"
               disabled={pending || (!content.trim() && !file)}
               className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-600 text-white transition hover:bg-emerald-700 disabled:opacity-50"
-              aria-label="إرسال"
-              title="إرسال"
+              aria-label="Ø¥Ø±Ø³Ø§Ù„"
+              title="Ø¥Ø±Ø³Ø§Ù„"
             >
               <Send className="h-4 w-4" />
             </button>

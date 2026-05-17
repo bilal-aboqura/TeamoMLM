@@ -99,10 +99,12 @@ function SidebarLink({
   href,
   label,
   icon,
+  unreadCount = 0,
 }: {
   href: string;
   label: string;
   icon: React.ReactNode;
+  unreadCount?: number;
 }) {
   const pathname = usePathname();
   const isActive = pathname === href || pathname.startsWith(href + "/");
@@ -126,14 +128,19 @@ function SidebarLink({
         {icon}
       </span>
       <span>{label}</span>
-      {isActive && (
+      {unreadCount > 0 && (
+        <span className="ms-auto inline-flex min-w-5 items-center justify-center rounded-full bg-rose-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+          {unreadCount > 99 ? "99+" : unreadCount}
+        </span>
+      )}
+      {isActive && unreadCount === 0 && (
         <span className="ms-auto w-1.5 h-1.5 rounded-full bg-emerald-500" />
       )}
     </Link>
   );
 }
 
-export function AdminSidebar() {
+export function AdminSidebar({ unreadChatCount = 0 }: { unreadChatCount?: number }) {
   const [loggingOut, setLoggingOut] = useState(false);
 
   const handleLogout = async () => {
@@ -170,6 +177,7 @@ export function AdminSidebar() {
             href={link.href}
             label={link.label}
             icon={link.icon}
+            unreadCount={link.href === "/admin/chat" ? unreadChatCount : 0}
           />
         ))}
       </nav>

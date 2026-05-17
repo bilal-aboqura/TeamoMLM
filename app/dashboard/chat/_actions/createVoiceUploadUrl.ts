@@ -11,7 +11,7 @@ const schema = z.object({
 
 export async function createVoiceUploadUrl(input: z.input<typeof schema>): Promise<
   | { success: true; path: string; token: string }
-  | { success: false; error: "UNAUTHORIZED" | "AUDIO_NOT_ALLOWED" | "VALIDATION_ERROR" }
+  | { success: false; error: "UNAUTHORIZED" | "AUDIO_NOT_ALLOWED" | "CANNOT_SEND_MESSAGES" | "VALIDATION_ERROR" }
 > {
   const auth = await getChatAuthContext();
   if (!auth) return { success: false, error: "UNAUTHORIZED" };
@@ -28,13 +28,16 @@ export async function createVoiceUploadUrl(input: z.input<typeof schema>): Promi
       .maybeSingle(),
     adminClient
       .from("chat_participants")
-      .select("room_id")
+      .select("room_id, can_send_messages")
       .eq("room_id", parsed.data.roomId)
       .eq("user_id", auth.userId)
       .maybeSingle(),
   ]);
 
   if (!participant) return { success: false, error: "UNAUTHORIZED" };
+  if (participant.can_send_messages === false) {
+    return { success: false, error: "CANNOT_SEND_MESSAGES" };
+  }
   if (!room || room.is_deleted) return { success: false, error: "VALIDATION_ERROR" };
   if (!normalizeMediaSettings(room.media_settings).audio_allowed) {
     return { success: false, error: "AUDIO_NOT_ALLOWED" };

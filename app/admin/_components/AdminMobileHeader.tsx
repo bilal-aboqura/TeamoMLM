@@ -88,9 +88,11 @@ const navLinks = [
 export function AdminDrawer({
   open,
   onClose,
+  unreadChatCount = 0,
 }: {
   open: boolean;
   onClose: () => void;
+  unreadChatCount?: number;
 }) {
   const pathname = usePathname();
   const [loggingOut, setLoggingOut] = useState(false);
@@ -157,7 +159,12 @@ export function AdminDrawer({
                   {link.icon}
                 </span>
                 <span>{link.label}</span>
-                {isActive && (
+                {link.href === "/admin/chat" && unreadChatCount > 0 && (
+                  <span className="ms-auto inline-flex min-w-5 items-center justify-center rounded-full bg-rose-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                    {unreadChatCount > 99 ? "99+" : unreadChatCount}
+                  </span>
+                )}
+                {isActive && (link.href !== "/admin/chat" || unreadChatCount === 0) && (
                   <span className="ms-auto w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 )}
               </Link>
@@ -186,7 +193,7 @@ export function AdminDrawer({
   );
 }
 
-export function AdminMobileHeader() {
+export function AdminMobileHeader({ unreadChatCount = 0 }: { unreadChatCount?: number }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -211,7 +218,7 @@ export function AdminMobileHeader() {
         </Link>
         <div className="w-9" />
       </header>
-      <AdminDrawer open={open} onClose={() => setOpen(false)} />
+      <AdminDrawer open={open} onClose={() => setOpen(false)} unreadChatCount={unreadChatCount} />
     </>
   );
 }

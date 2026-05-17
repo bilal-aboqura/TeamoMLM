@@ -48,6 +48,7 @@ type SendMessageResult =
         | "VALIDATION_ERROR"
         | "UPLOAD_FAILED"
         | "CONTENT_POLICY_VIOLATION"
+        | "CANNOT_SEND_MESSAGES"
         | "AUDIO_NOT_ALLOWED";
       detail?: string;
     };
@@ -86,12 +87,15 @@ export async function sendMessage(input: SendMessageInput | FormData): Promise<S
 
   const { data: participant } = await adminClient
     .from("chat_participants")
-    .select("room_id")
+    .select("room_id, can_send_messages")
     .eq("room_id", roomId)
     .eq("user_id", auth.userId)
     .maybeSingle();
 
   if (!participant) return { success: false, error: "UNAUTHORIZED" };
+  if (participant.can_send_messages === false) {
+    return { success: false, error: "CANNOT_SEND_MESSAGES" };
+  }
 
   const storageId = crypto.randomUUID();
   let attachment = input instanceof FormData ? undefined : input.attachment;
@@ -155,6 +159,9 @@ export async function sendMessage(input: SendMessageInput | FormData): Promise<S
       };
     }
     if (message === "NOT_PARTICIPANT") return { success: false, error: "UNAUTHORIZED" };
+    if (message === "CANNOT_SEND_MESSAGES") {
+      return { success: false, error: "CANNOT_SEND_MESSAGES" };
+    }
     if (message === "CROSS_ROOM_REPLY") return { success: false, error: "VALIDATION_ERROR" };
     return { success: false, error: "VALIDATION_ERROR" };
   }

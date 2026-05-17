@@ -20,14 +20,6 @@ export async function markMessagesAsRead(input: z.input<typeof schema>): Promise
   if (!parsed.success) return { success: false, error: "VALIDATION_ERROR" };
 
   const adminClient = createAdminClient();
-  const { data: room } = await adminClient
-    .from("chat_rooms")
-    .select("room_type")
-    .eq("id", parsed.data.roomId)
-    .maybeSingle();
-
-  if (room?.room_type !== "direct_message") return { success: true, data: { updatedCount: 0 } };
-
   const { data: participant } = await adminClient
     .from("chat_participants")
     .select("room_id")
