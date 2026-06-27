@@ -38,7 +38,7 @@ export async function submitWithdrawal(
   }
 
   // Use the user-scoped client so that auth.uid() is correctly populated inside the RPC.
-  // NEVER use the admin/service-role client for user-owned RPCs — it sets auth.uid() = null.
+  // NEVER use the admin/service-role client for user-owned RPCs because it sets auth.uid() = null.
   const { data, error } = await supabase.rpc("user_submit_withdrawal", {
     p_amount: amount,
     p_payment_details: payment_details,
@@ -74,7 +74,7 @@ export async function submitWithdrawal(
       return {
         error: {
           field: "amount",
-          message: "الحد الأدنى للسحب هو 10 دولار",
+          message: "الحد الأدنى للسحب هو 50 دولار",
         },
       };
     }
@@ -86,12 +86,10 @@ export async function submitWithdrawal(
     };
   }
 
-  // RPC now returns JSONB: { request_id, fee_pct, fee_amount, net_amount }
   const result = data as { fee_pct: number; fee_amount: number; net_amount: number } | null;
   const feePct = result?.fee_pct ?? 0;
   const netAmount = result?.net_amount ?? amount;
 
-  // Force server cache invalidation so the balance updates immediately on the next render
   revalidatePath("/dashboard/wallet");
   revalidatePath("/dashboard");
 

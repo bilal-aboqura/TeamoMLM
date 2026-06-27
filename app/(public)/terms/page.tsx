@@ -92,7 +92,7 @@ export default function TermsPage() {
           <section className="mb-8">
             <h2 className="text-lg font-bold text-slate-900 mb-3">9. السحب</h2>
             <ul className="list-disc list-inside space-y-2 pe-2">
-              <li>الحد الأدنى للسحب هو 10 دولار أمريكي.</li>
+              <li>الحد الأدنى للسحب هو 50 دولار أمريكي.</li>
               <li>الحد الأقصى للسحب اليومي هو 100 دولار أمريكي.</li>
               <li>يتم تنفيذ طلب السحب خلال مدة لا تتجاوز 48 ساعة.</li>
               <li>في الحالات الطبيعية، يتم تنفيذ السحب خلال الساعات الأولى من تقديم الطلب.</li>

@@ -17,7 +17,7 @@ export const submitWithdrawalSchema = z.object({
     .pipe(
       z
         .number()
-        .min(10.0, "الحد الأدنى للسحب هو 10 دولار")
+        .min(50.0, "الحد الأدنى للسحب هو 50 دولار")
         .max(999999.99, "المبلغ يتجاوز الحد المسموح")
     ),
   payment_details: z
@@ -31,4 +31,3 @@ export type WithdrawalActionResult =
   | { success: false; idle: true }
   | { success: true; feePct: number; netAmount: number }
   | { error: { field: string; message: string } };
-

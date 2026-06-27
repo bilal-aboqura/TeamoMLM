@@ -7,6 +7,8 @@ import { submitWithdrawal } from "../actions";
 import { type WithdrawalActionResult } from "@/lib/validations/wallet-schemas";
 
 const initialState: WithdrawalActionResult = { success: false, idle: true };
+const MIN_WITHDRAWAL_AMOUNT = 50;
+const MIN_WITHDRAWAL_MESSAGE = "الحد الأدنى للسحب هو 50 دولار";
 
 function SubmitButton({ disabled }: { disabled: boolean }) {
   const { pending } = useFormStatus();
@@ -37,7 +39,7 @@ export function WithdrawalForm({
 
   const error = "error" in state ? state.error : null;
   const isZeroBalance = availableBalance === 0;
-  const isBelowMinimum = availableBalance < 10;
+  const isBelowMinimum = availableBalance < MIN_WITHDRAWAL_AMOUNT;
 
   useEffect(() => {
     if ("success" in state && state.success === true) {
@@ -46,7 +48,7 @@ export function WithdrawalForm({
       setTimeout(() => setToast(null), 5000);
       router.refresh();
     }
-    // Clear stale client-side blur errors whenever the server returns any new response
+
     if ("error" in state || ("success" in state && state.success === true)) {
       setClientError(null);
     }
@@ -65,17 +67,18 @@ export function WithdrawalForm({
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const val = parseFloat(e.target.value);
     if (isNaN(val) || val <= 0) {
-      setClientError("الحد الأدنى للسحب هو 10 دولار");
+      setClientError(MIN_WITHDRAWAL_MESSAGE);
       return;
     }
-    if (val < 10) {
-      setClientError("الحد الأدنى للسحب هو 10 دولار");
+    if (val < MIN_WITHDRAWAL_AMOUNT) {
+      setClientError(MIN_WITHDRAWAL_MESSAGE);
       return;
     }
     if (val > availableBalance) {
       setClientError("المبلغ يتجاوز رصيدك المتاح");
       return;
     }
+
     const decimals = e.target.value.includes(".")
       ? e.target.value.split(".")[1]
       : "";
@@ -83,6 +86,7 @@ export function WithdrawalForm({
       setClientError("المبلغ يجب أن يحتوي على خانتين عشريتين كحد أقصى");
       return;
     }
+
     setClientError(null);
   };
 
@@ -94,7 +98,7 @@ export function WithdrawalForm({
         <div>
           <div className="flex items-center justify-between mb-1">
             <label htmlFor="amount" className="block text-sm text-slate-500">
-              المبلغ (دولار) — الحد الأدنى $10
+              المبلغ (دولار) - الحد الأدنى $50
             </label>
             <span className="text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full shadow-sm">
               عمولة السحب صفر
@@ -105,7 +109,7 @@ export function WithdrawalForm({
             name="amount"
             type="number"
             step="0.01"
-            min="10"
+            min="50"
             inputMode="decimal"
             placeholder="0.00"
             onBlur={handleBlur}
@@ -149,7 +153,7 @@ export function WithdrawalForm({
 
         {isBelowMinimum && !isZeroBalance && (
           <p className="text-xs text-amber-600 text-center">
-            رصيدك أقل من الحد الأدنى للسحب ($10)
+            رصيدك أقل من الحد الأدنى للسحب ($50)
           </p>
         )}
       </form>
